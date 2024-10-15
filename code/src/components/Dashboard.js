@@ -1,15 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Paper, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Container, Grid, Paper, Typography, Card, CardContent, List, ListItem, ListItemText, Chip } from '@mui/material';
 import axios from 'axios';
+import moment from 'moment';
 
 const Dashboard = () => {
   const [requests, setRequests] = useState([]);
 
-  // Simulamos una llamada a la API para obtener las solicitudes
+  // Simulamos una llamada a la API para obtener las solicitudes con los nuevos campos
   useEffect(() => {
+    const mockData = [
+      {
+        roomNumber: 101,
+        serviceType: 'Servicio a la habitación',
+        status: 'En proceso',
+        time: '2024-10-14T10:45:00',
+        priority: 'Alta',
+        voiceCommand: 'Alexa, trae toallas adicionales',
+        review: 'Excelente servicio, rápido y eficiente.',
+        guest: 'John Doe'
+      },
+      {
+        roomNumber: 202,
+        serviceType: 'Limpieza',
+        status: 'Completado',
+        time: '2024-10-14T09:30:00',
+        priority: 'Media',
+        voiceCommand: 'Alexa, solicita limpieza',
+        review: 'Servicio aceptable, pero podría ser más rápido.',
+        guest: 'Jane Doe'
+      }
+    ];
+
+    // Simulamos la asignación de los datos simulados a la variable de estado
+    setRequests(mockData);
+
+    // Código comentado para el caso de una API real:
+    /*
     const fetchRequests = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/requests'); // Reemplaza con tu API
+        const response = await axios.get('http://localhost:5000/api/requests'); // Reemplaza con tu API real
         setRequests(response.data);
       } catch (error) {
         console.error('Error fetching requests:', error);
@@ -17,10 +46,11 @@ const Dashboard = () => {
     };
 
     fetchRequests();
+    */
   }, []);
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="lg" style={{ marginTop: '20px' }}>
       <Typography variant="h4" gutterBottom>
         Solicitudes de los Huéspedes
       </Typography>
@@ -34,11 +64,32 @@ const Dashboard = () => {
             <List>
               {requests.length > 0 ? (
                 requests.map((request, index) => (
-                  <ListItem key={index}>
-                    <ListItemText
-                      primary={`Solicitud: ${request.service}`}
-                      secondary={`Estado: ${request.status} - Realizada por: ${request.guest}`}
-                    />
+                  <ListItem key={index} style={{ marginBottom: '10px' }}>
+                    <Card style={{ width: '100%', padding: '15px' }} variant="outlined">
+                      <CardContent>
+                        <Typography variant="h6">
+                          Habitación: {request.roomNumber}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          <strong>Tipo de Solicitud:</strong> {request.serviceType}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          <strong>Estado:</strong> {request.status}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          <strong>Hora de Solicitud:</strong> {moment(request.time).format('LLL')}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          <strong>Prioridad:</strong> <Chip label={request.priority} color={request.priority === 'Alta' ? 'error' : 'primary'} />
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          <strong>Comando de Voz:</strong> {request.voiceCommand}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          <strong>Reseña del Huésped:</strong> {request.review}
+                        </Typography>
+                      </CardContent>
+                    </Card>
                   </ListItem>
                 ))
               ) : (
