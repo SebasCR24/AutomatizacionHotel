@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Paper, Typography, Card, CardContent, List, ListItem, ListItemText, Chip } from '@mui/material';
-import axios from 'axios';
+import { Container, Grid, Paper, Typography, Card, CardContent, List, ListItem, Chip } from '@mui/material';
 import moment from 'moment';
 
 const Dashboard = () => {
   const [requests, setRequests] = useState([]);
 
-  // Simulamos una llamada a la API para obtener las solicitudes con los nuevos campos
   useEffect(() => {
     const mockData = [
       {
@@ -31,86 +29,79 @@ const Dashboard = () => {
       }
     ];
 
-    // Simulamos la asignación de los datos simulados a la variable de estado
     setRequests(mockData);
-
-    // Código comentado para el caso de una API real:
-    /*
-    const fetchRequests = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/requests'); // Reemplaza con tu API real
-        setRequests(response.data);
-      } catch (error) {
-        console.error('Error fetching requests:', error);
-      }
-    };
-
-    fetchRequests();
-    */
   }, []);
 
   return (
-    <Container maxWidth="lg" style={{ marginTop: '20px' }}>
-      <Typography variant="h4" gutterBottom>
-        Solicitudes de los Huéspedes
-      </Typography>
+    <div style={{ 
+      backgroundColor: '#f4f6f8', 
+      minHeight: '100vh', 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'flex-start',  
+      paddingTop: '20px'  
+    }}> 
+      <Container maxWidth="lg">
+        <Typography variant="h5" gutterBottom style={{ textAlign: 'center', marginBottom: '30px', fontSize: '24px' }}> {/* Tamaño menor para este título */}
+          Solicitudes de los Huéspedes
+        </Typography>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Paper elevation={3} style={{ padding: '20px' }}>
-            <Typography variant="h6" gutterBottom>
-              Solicitudes recientes
-            </Typography>
-            <List>
-              {requests.length > 0 ? (
-                requests.map((request, index) => (
-                  <ListItem key={index} style={{ marginBottom: '10px' }}>
-                    <Card style={{ width: '100%', padding: '15px' }} variant="outlined">
-                      <CardContent>
-                        <Typography variant="h6">
-                          Habitación: {request.roomNumber}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <strong>Tipo de Solicitud:</strong> {request.serviceType}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <strong>Estado:</strong> {request.status}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <strong>Hora de Solicitud:</strong> {moment(request.time).format('LLL')}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <strong>Prioridad:</strong> <Chip label={request.priority} color={request.priority === 'Alta' ? 'error' : 'primary'} />
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <strong>Comando de Voz:</strong> {request.voiceCommand}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <strong>Reseña del Huésped:</strong> {request.review}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </ListItem>
-                ))
-              ) : (
-                <Typography>No hay solicitudes por el momento.</Typography>
-              )}
-            </List>
-          </Paper>
-        </Grid>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={8}>
+            <Paper elevation={3} style={{ padding: '30px' }}>
+              <Typography variant="h6" gutterBottom>
+                Solicitudes recientes
+              </Typography>
+              <List>
+                {requests.length > 0 ? (
+                  requests.map((request, index) => (
+                    <ListItem key={index} style={{ marginBottom: '10px' }}>
+                      <Card style={{ width: '100%', padding: '15px' }} variant="outlined">
+                        <CardContent>
+                          <Typography variant="h6">
+                            Habitación: {request.roomNumber}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <strong>Tipo de Solicitud:</strong> {request.serviceType}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <strong>Estado:</strong> {request.status}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <strong>Hora de Solicitud:</strong> {moment(request.time).format('LLL')}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <strong>Prioridad:</strong> <Chip label={request.priority} color={request.priority === 'Alta' ? 'error' : 'primary'} />
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <strong>Comando de Voz:</strong> {request.voiceCommand}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <strong>Reseña del Huésped:</strong> {request.review}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </ListItem>
+                  ))
+                ) : (
+                  <Typography>No hay solicitudes por el momento.</Typography>
+                )}
+              </List>
+            </Paper>
+          </Grid>
 
-        <Grid item xs={12} md={4}>
-          <Paper elevation={3} style={{ padding: '20px' }}>
-            <Typography variant="h6" gutterBottom>
-              Dispositivos IoT
-            </Typography>
-            <Typography>Cortinas: Abiertas</Typography>
-            <Typography>Luces: Encendidas</Typography>
-            {/* Aquí puedes mostrar el estado de otros dispositivos */}
-          </Paper>
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} style={{ padding: '20px' }}>
+              <Typography variant="h6" gutterBottom>
+                Dispositivos IoT
+              </Typography>
+              <Typography>Cortinas: Abiertas</Typography>
+              <Typography>Luces: Encendidas</Typography>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </div>
   );
 };
 
