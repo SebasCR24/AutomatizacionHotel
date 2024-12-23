@@ -25,6 +25,57 @@ const Dashboard = () => {
     }
   };
 
+  // Función para actualizar una solicitud (PUT)
+  const updateRequest = async (id, updatedData) => {
+    try {
+      const response = await fetch(
+        `PUT_ENDPOINT_URL_HERE/${id}`, // Reemplaza con el endpoint PUT
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatedData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar la solicitud');
+      }
+
+      const updatedRequest = await response.json();
+      setRequests((prevRequests) =>
+        prevRequests.map((request) => (request.id === id ? updatedRequest : request))
+      );
+    } catch (err) {
+      console.error(err.message);
+      alert('No se pudo actualizar la solicitud');
+    }
+  };
+
+  // Función para eliminar una solicitud (DELETE)
+  const deleteRequest = async (id) => {
+    try {
+      const response = await fetch(
+        `DELETE_ENDPOINT_URL_HERE/${id}`, // Reemplaza con el endpoint DELETE
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar la solicitud');
+      }
+
+      setRequests((prevRequests) =>
+        prevRequests.filter((request) => request.id !== id)
+      );
+    } catch (err) {
+      console.error(err.message);
+      alert('No se pudo eliminar la solicitud');
+    }
+  };
+
   // Llamada inicial al montar el componente
   useEffect(() => {
     fetchRequests();
@@ -71,8 +122,24 @@ const Dashboard = () => {
                             <strong>Prioridad:</strong> <Chip label={request.priority} color={request.priority === 'Alta' ? 'error' : 'primary'} />
                           </Typography>
                           <Typography variant="body2" color="textSecondary">
-                            <strong>Solicitud Especifica:</strong>{request.specificRequest}
+                            <strong>Solicitud Específica:</strong> {request.specificRequest}
                           </Typography>
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => updateRequest(request.id, { status: 'Completado' })}
+                            style={{ marginTop: '15px', borderRadius: '25px' }}
+                          >
+                            Actualizar
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => deleteRequest(request.id)}
+                            style={{ marginLeft: '10px', marginTop: '15px', borderRadius: '25px' }}
+                          >
+                            Eliminar
+                          </Button>
                         </CardContent>
                       </Card>
                     </ListItem>
