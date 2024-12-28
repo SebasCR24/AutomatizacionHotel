@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Paper, Typography, Button, List, ListItem, Card, CardContent, Chip } from '@mui/material';
+import { Container, Grid, Paper, Typography, Button, List, ListItem, Card, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import moment from 'moment';
 import Sidebar from '../components/Sidebar';
 
@@ -7,11 +7,12 @@ const Dashboard = () => {
   const [requests, setRequests] = useState([]); // Estado para almacenar las solicitudes
   const [loading, setLoading] = useState(true); // Indicador de carga
   const [error, setError] = useState(null); // Indicador de error
+  const [selectedRequest, setSelectedRequest] = useState(null); // Solicitud seleccionada para actualizar/eliminar
+  const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  // Endpoint base
   const API_BASE_URL = 'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/room-service-requests';
 
-  // Función para obtener solicitudes desde el backend
   const fetchRequests = async () => {
     try {
       setLoading(true);
@@ -20,7 +21,7 @@ const Dashboard = () => {
         throw new Error('Error al obtener las solicitudes');
       }
       const data = await response.json();
-      setRequests(data); // Asume que `data` es un array de solicitudes
+      setRequests(data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -28,32 +29,30 @@ const Dashboard = () => {
     }
   };
 
-  // Función para actualizar una solicitud (PUT)
-  const updateRequest = async (id, updatedData) => {
+  const handleUpdate = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/${selectedRequest._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify(selectedRequest),
       });
 
       if (!response.ok) {
         throw new Error('Error al actualizar la solicitud');
       }
 
-      fetchRequests(); // Refrescar la lista después de la actualización
+      setOpenUpdateDialog(false);
+      fetchRequests();
     } catch (err) {
-      console.error(err);
       setError(err.message);
     }
   };
 
-  // Función para eliminar una solicitud (DELETE)
-  const deleteRequest = async (id) => {
+  const handleDelete = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/${selectedRequest._id}`, {
         method: 'DELETE',
       });
 
@@ -61,14 +60,13 @@ const Dashboard = () => {
         throw new Error('Error al eliminar la solicitud');
       }
 
-      fetchRequests(); // Refrescar la lista después de la eliminación
+      setOpenDeleteDialog(false);
+      fetchRequests();
     } catch (err) {
-      console.error(err);
       setError(err.message);
     }
   };
 
-  // Llamada inicial al montar el componente
   useEffect(() => {
     fetchRequests();
   }, []);
@@ -96,45 +94,59 @@ const Dashboard = () => {
                 <List>
                   {requests.map((request) => (
                     <ListItem key={request._id} style={{ marginBottom: '10px' }}>
-                      <Card style={{ width: '100%', padding: '20px', borderRadius: '15px', boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)' }}>
+                      <Card style={{ width: '100%', padding: '20px', borderRadius: '15px' }}>
                         <CardContent>
                           <Typography variant="h6" style={{ fontWeight: 600 }}>
-                            Habitación: {request.roomNumber || 'Sin número'}
+                            Habitación: {request.roomNumber}
                           </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            <strong>Tipo de Solicitud:</strong> {request.requestType || 'N/A'}
+                          <Typography><strong>Tipo:</strong> {request.requestType}</Typography>
+                          <Typography><strong>Estado:</strong> {request.state}</Typography>
+                          <Typography><strong>Hora:</strong> {moment(request.requestTime).format('LLL')}</Typography>
+                          <Typography><strong>Prioridad:</strong> 
+                            <Chip
+                              label={request.priority}
+                              style={{
+                                backgroundColor:
+                                  request.priority === 'alta'
+                                    ? '#f44336'
+                                    : request.priority === 'media'
+                                    ? '#ff9800'
+                                    : '#4caf50',
+                                color: '#fff',
+                              }}
+                            />
                           </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            <strong>Estado:</strong> {request.state || 'N/A'}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            <strong>Hora de Solicitud:</strong> {moment(request.requestTime).format('LLL') || 'N/A'}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            <strong>Prioridad:</strong> <Chip label={request.priority || 'N/A'} color={request.priority === 'alta' ? 'error' : 'primary'} />
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            <strong>Solicitud Específica:</strong> {request.specificRequest || 'N/A'}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            <strong>Hora:</strong> {request.time || 'N/A'}
-                          </Typography>
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={() => updateRequest(request._id, { ...request, state: 'actualizado' })}
-                            style={{ marginTop: '15px', borderRadius: '25px' }}
-                          >
-                            Actualizar
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            onClick={() => deleteRequest(request._id)}
-                            style={{ marginLeft: '10px', marginTop: '15px', borderRadius: '25px' }}
-                          >
-                            Eliminar
-                          </Button>
+                          <Typography><strong>Solicitud:</strong> {request.specificRequest}</Typography>
+                          <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '15px' }}>
+                            <Button
+                              variant="contained"
+                              style={{
+                                backgroundColor: '#9436cd',
+                                color: '#fff',
+                                marginRight: '10px',
+                                borderRadius: '25px',
+                              }}
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setOpenUpdateDialog(true);
+                              }}
+                            >
+                              Actualizar
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              style={{
+                                borderRadius: '25px',
+                              }}
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setOpenDeleteDialog(true);
+                              }}
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
                         </CardContent>
                       </Card>
                     </ListItem>
@@ -158,6 +170,41 @@ const Dashboard = () => {
           </Grid>
         </Grid>
       </Container>
+
+      {/* Dialogo para actualizar */}
+      <Dialog open={openUpdateDialog} onClose={() => setOpenUpdateDialog(false)}>
+        <DialogTitle>Actualizar Solicitud</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Solicitud"
+            value={selectedRequest?.specificRequest || ''}
+            onChange={(e) => setSelectedRequest({ ...selectedRequest, specificRequest: e.target.value })}
+            fullWidth
+          />
+          <TextField
+            label="Hora"
+            value={selectedRequest?.time || ''}
+            onChange={(e) => setSelectedRequest({ ...selectedRequest, time: e.target.value })}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenUpdateDialog(false)}>Cancelar</Button>
+          <Button onClick={handleUpdate} color="primary">Actualizar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialogo para eliminar */}
+      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+        <DialogTitle>Confirmar Eliminación</DialogTitle>
+        <DialogContent>
+          <Typography>¿Estás seguro de que deseas eliminar esta solicitud?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteDialog(false)}>Cancelar</Button>
+          <Button onClick={handleDelete} color="error">Eliminar</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
