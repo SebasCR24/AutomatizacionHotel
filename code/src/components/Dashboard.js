@@ -16,13 +16,19 @@ const Dashboard = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_BASE_URL);
+      const response = await fetch(API_BASE_URL, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       if (!response.ok) {
-        throw new Error('Error al obtener las solicitudes');
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
       setRequests(data);
     } catch (err) {
+      console.error('Fetch Error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -102,20 +108,21 @@ const Dashboard = () => {
                           <Typography><strong>Tipo:</strong> {request.requestType}</Typography>
                           <Typography><strong>Estado:</strong> {request.state}</Typography>
                           <Typography><strong>Hora:</strong> {moment(request.requestTime).format('LLL')}</Typography>
-                          <Typography><strong>Prioridad:</strong> 
-                            <Chip
-                              label={request.priority}
-                              style={{
-                                backgroundColor:
-                                  request.priority === 'alta'
-                                    ? '#f44336'
-                                    : request.priority === 'media'
-                                    ? '#ff9800'
-                                    : '#4caf50',
-                                color: '#fff',
-                              }}
-                            />
+                          <Typography component="span">
+                            <strong>Prioridad:</strong>
                           </Typography>
+                          <Chip
+                            label={request.priority}
+                            style={{
+                              backgroundColor:
+                                request.priority === 'alta'
+                                  ? '#f44336'
+                                  : request.priority === 'media'
+                                  ? '#ff9800'
+                                  : '#4caf50',
+                              color: '#fff',
+                            }}
+                          />
                           <Typography><strong>Solicitud:</strong> {request.specificRequest}</Typography>
                           <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '15px' }}>
                             <Button
