@@ -4,10 +4,10 @@ import moment from 'moment';
 import Sidebar from '../components/Sidebar';
 
 const Dashboard = () => {
-  const [requests, setRequests] = useState([]); // Estado para almacenar las solicitudes
-  const [loading, setLoading] = useState(true); // Indicador de carga
-  const [error, setError] = useState(null); // Indicador de error
-  const [selectedRequest, setSelectedRequest] = useState(null); // Solicitud seleccionada para actualizar/eliminar
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
@@ -16,19 +16,13 @@ const Dashboard = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_BASE_URL, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(API_BASE_URL);
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        throw new Error('Error al obtener las solicitudes');
       }
       const data = await response.json();
       setRequests(data);
     } catch (err) {
-      console.error('Fetch Error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -37,16 +31,22 @@ const Dashboard = () => {
 
   const handleUpdate = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/${selectedRequest._id}`, {
+      const response = await fetch(`${API_BASE_URL}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(selectedRequest),
+        body: JSON.stringify({
+          id: selectedRequest._id,
+          updates: {
+            specificRequest: selectedRequest.specificRequest,
+            time: selectedRequest.time,
+          },
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Error al actualizar la solicitud');
+        throw new Error('No se pudo actualizar la solicitud. Verifica los permisos o la configuración.');
       }
 
       setOpenUpdateDialog(false);
@@ -58,12 +58,16 @@ const Dashboard = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/${selectedRequest._id}`, {
+      const response = await fetch(`${API_BASE_URL}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: selectedRequest._id }),
       });
 
       if (!response.ok) {
-        throw new Error('Error al eliminar la solicitud');
+        throw new Error('No se pudo eliminar la solicitud. Verifica los permisos o la configuración.');
       }
 
       setOpenDeleteDialog(false);
@@ -86,7 +90,6 @@ const Dashboard = () => {
         </Typography>
 
         <Grid container spacing={4}>
-          {/* Lista de Solicitudes */}
           <Grid item xs={12} md={8}>
             <Paper elevation={5} style={{ padding: '30px', borderRadius: '15px' }}>
               <Typography variant="h6" gutterBottom style={{ fontWeight: 500 }}>
@@ -105,25 +108,25 @@ const Dashboard = () => {
                           <Typography variant="h6" style={{ fontWeight: 600 }}>
                             Habitación: {request.roomNumber}
                           </Typography>
-                          <Typography><strong>Tipo:</strong> {request.requestType}</Typography>
+                          <Typography><strong>Fecha de Solicitud:</strong> {moment(request.requestTime).format('LLL')}</Typography>
                           <Typography><strong>Estado:</strong> {request.state}</Typography>
-                          <Typography><strong>Hora:</strong> {moment(request.requestTime).format('LLL')}</Typography>
-                          <Typography component="span">
-                            <strong>Prioridad:</strong>
-                          </Typography>
-                          <Chip
-                            label={request.priority}
-                            style={{
-                              backgroundColor:
-                                request.priority === 'alta'
-                                  ? '#f44336'
-                                  : request.priority === 'media'
-                                  ? '#ff9800'
-                                  : '#4caf50',
-                              color: '#fff',
-                            }}
-                          />
                           <Typography><strong>Solicitud:</strong> {request.specificRequest}</Typography>
+                          <Typography><strong>Tipo:</strong> {request.requestType}</Typography>
+                          <Typography><strong>Hora Solicitada:</strong> {request.time}</Typography>
+                          <Typography><strong>Prioridad:</strong> 
+                            <Chip
+                              label={request.priority}
+                              style={{
+                                backgroundColor:
+                                  request.priority === 'alta'
+                                    ? '#f44336'
+                                    : request.priority === 'media'
+                                    ? '#ff9800'
+                                    : '#4caf50',
+                                color: '#fff',
+                              }}
+                            />
+                          </Typography>
                           <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '15px' }}>
                             <Button
                               variant="contained"
@@ -163,7 +166,6 @@ const Dashboard = () => {
             </Paper>
           </Grid>
 
-          {/* Espacio reservado para otras funcionalidades */}
           <Grid item xs={12} md={4}>
             <Paper elevation={5} style={{ padding: '20px', borderRadius: '15px', backgroundColor: '#fff' }}>
               <Typography variant="h6" gutterBottom style={{ fontWeight: 500 }}>
@@ -178,7 +180,6 @@ const Dashboard = () => {
         </Grid>
       </Container>
 
-      {/* Dialogo para actualizar */}
       <Dialog open={openUpdateDialog} onClose={() => setOpenUpdateDialog(false)}>
         <DialogTitle>Actualizar Solicitud</DialogTitle>
         <DialogContent>
@@ -201,7 +202,6 @@ const Dashboard = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Dialogo para eliminar */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
         <DialogTitle>Confirmar Eliminación</DialogTitle>
         <DialogContent>
