@@ -10,6 +10,12 @@ const Dashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [menu, setMenu] = useState({
+    breakfastAmerican: '',
+    breakfastContinental: '',
+    lunchSoup: '',
+    lunchRice: ''
+  });
 
   const API_BASE_URL = 'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/room-service-requests';
 
@@ -31,17 +37,15 @@ const Dashboard = () => {
 
   const handleUpdate = async () => {
     try {
+      const { _id, ...updates } = selectedRequest;
       const response = await fetch(`${API_BASE_URL}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: selectedRequest._id,
-          updates: {
-            specificRequest: selectedRequest.specificRequest,
-            time: selectedRequest.time,
-          },
+          id: _id,
+          updates: updates,
         }),
       });
 
@@ -75,6 +79,12 @@ const Dashboard = () => {
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const handleMenuSubmit = () => {
+    console.log('Menú actualizado:', menu);
+    // Aquí puedes agregar la lógica para enviar el menú a tu backend o API
+    alert('Menú actualizado correctamente.');
   };
 
   useEffect(() => {
@@ -168,48 +178,142 @@ const Dashboard = () => {
 
           <Grid item xs={12} md={4}>
             <Paper elevation={5} style={{ padding: '20px', borderRadius: '15px', backgroundColor: '#fff' }}>
-              <Typography variant="h6" gutterBottom style={{ fontWeight: 500 }}>
-                Dispositivos IoT
+              <Typography variant="h6" gutterBottom style={{ fontWeight: 500, textAlign: 'center' }}>
+                Menú del Día
               </Typography>
-              <Typography>Fire TV Stick: Encendido</Typography>
-              <Typography>Luces: Apagadas</Typography>
-              <Typography>Persianas: Abiertas</Typography>
-              <Typography>Aire acondicionado: Apagado</Typography>
+              <TextField
+                label="Desayuno Americano"
+                value={menu.breakfastAmerican}
+                onChange={(e) => setMenu({ ...menu, breakfastAmerican: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+              <TextField
+                label="Desayuno Continental"
+                value={menu.breakfastContinental}
+                onChange={(e) => setMenu({ ...menu, breakfastContinental: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+              <TextField
+                label="Sopa (Almuerzo Opción 1)"
+                value={menu.lunchSoup}
+                onChange={(e) => setMenu({ ...menu, lunchSoup: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+              <TextField
+                label="Sopa (Almuerzo Opción 2)"
+                value={menu.lunchSoup}
+                onChange={(e) => setMenu({ ...menu, lunchSoup: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+              <TextField
+                label="Arroz (Almuerzo Opción 1)"
+                value={menu.lunchRice}
+                onChange={(e) => setMenu({ ...menu, lunchRice: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+              <TextField
+                label="Arroz (Almuerzo Opción 2)"
+                value={menu.lunchRice}
+                onChange={(e) => setMenu({ ...menu, lunchRice: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+              <Button
+                variant="contained"
+                fullWidth
+                style={{ backgroundColor: '#2196f3', color: '#fff' }}
+                onClick={handleMenuSubmit}
+              >
+                Guardar Menú
+              </Button>
             </Paper>
           </Grid>
         </Grid>
       </Container>
 
       <Dialog open={openUpdateDialog} onClose={() => setOpenUpdateDialog(false)}>
-        <DialogTitle>Actualizar Solicitud</DialogTitle>
+        <DialogTitle style={{ textAlign: 'center', fontWeight: 600, color: '#2196f3' }}>Actualizar Solicitud</DialogTitle>
         <DialogContent>
-          <TextField
-            label="Solicitud"
-            value={selectedRequest?.specificRequest || ''}
-            onChange={(e) => setSelectedRequest({ ...selectedRequest, specificRequest: e.target.value })}
-            fullWidth
-          />
-          <TextField
-            label="Hora"
-            value={selectedRequest?.time || ''}
-            onChange={(e) => setSelectedRequest({ ...selectedRequest, time: e.target.value })}
-            fullWidth
-          />
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                label="Habitación"
+                value={selectedRequest?.roomNumber || ''}
+                onChange={(e) => setSelectedRequest({ ...selectedRequest, roomNumber: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px', marginTop: '10px' }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Estado"
+                value={selectedRequest?.state || ''}
+                onChange={(e) => setSelectedRequest({ ...selectedRequest, state: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Solicitud"
+                value={selectedRequest?.specificRequest || ''}
+                onChange={(e) => setSelectedRequest({ ...selectedRequest, specificRequest: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Tipo"
+                value={selectedRequest?.requestType || ''}
+                onChange={(e) => setSelectedRequest({ ...selectedRequest, requestType: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Hora Solicitada"
+                type="time"
+                value={selectedRequest?.time || ''}
+                onChange={(e) => setSelectedRequest({ ...selectedRequest, time: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Prioridad"
+                value={selectedRequest?.priority || ''}
+                onChange={(e) => setSelectedRequest({ ...selectedRequest, priority: e.target.value })}
+                fullWidth
+                style={{ marginBottom: '15px' }}
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenUpdateDialog(false)}>Cancelar</Button>
-          <Button onClick={handleUpdate} color="primary">Actualizar</Button>
+        <DialogActions style={{ justifyContent: 'center', marginBottom: '10px' }}>
+          <Button onClick={() => setOpenUpdateDialog(false)} style={{ color: '#ff1744' }}>Cancelar</Button>
+          <Button onClick={handleUpdate} style={{ backgroundColor: '#2196f3', color: '#fff' }}>Actualizar</Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>Confirmar Eliminación</DialogTitle>
+        <DialogTitle style={{ textAlign: 'center', color: '#ff1744' }}>Confirmar Eliminación</DialogTitle>
         <DialogContent>
-          <Typography>¿Estás seguro de que deseas eliminar esta solicitud?</Typography>
+          <Typography style={{ textAlign: 'center' }}>¿Estás seguro de que deseas eliminar esta solicitud?</Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Cancelar</Button>
-          <Button onClick={handleDelete} color="error">Eliminar</Button>
+        <DialogActions style={{ justifyContent: 'center' }}>
+          <Button onClick={() => setOpenDeleteDialog(false)} style={{ color: '#ff1744' }}>Cancelar</Button>
+          <Button onClick={handleDelete} style={{ backgroundColor: '#ff1744', color: '#fff' }}>Eliminar</Button>
         </DialogActions>
       </Dialog>
     </div>
