@@ -8,7 +8,7 @@ const Header = ({ handleDrawerToggle }) => {
     <AppBar
       position="static"
       style={{
-        background: 'linear-gradient(90deg, rgba(33,150,243,1) 0%, rgba(3,169,244,1) 100%)',
+        background: 'linear-gradient(90deg, #2196f3 0%, rgba(3,169,244,1) 100%)',
         boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
         padding: '0px 0'
       }}
