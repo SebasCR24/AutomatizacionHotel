@@ -10,7 +10,7 @@ const Header = ({ handleDrawerToggle }) => {
       style={{
         background: 'linear-gradient(90deg, #2196f3 0%, rgba(3,169,244,1) 100%)',
         boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-        padding: '0px 0'
+        padding: '0px 0',
       }}
     >
       <Toolbar style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -19,14 +19,14 @@ const Header = ({ handleDrawerToggle }) => {
             edge="start"
             color="inherit"
             aria-label="menu"
-            onClick={handleDrawerToggle}
+            onClick={handleDrawerToggle} // Asegura que el evento está conectado al handler
           >
             <MenuIcon />
           </IconButton>
 
           {/* Aquí mostramos el logo accediendo a él desde la carpeta public */}
           <img
-            src="/assets/logosinfondo.png"  // Acceso directo a la imagen del logo
+            src="/assets/logosinfondo.png" // Acceso directo a la imagen del logo
             alt="logo"
             style={{ height: '120px', marginLeft: '5px', marginRight: '5px' }}
           />
@@ -39,7 +39,7 @@ const Header = ({ handleDrawerToggle }) => {
               color: '#fff',
               position: 'absolute', // Para centrar el título
               left: '50%',
-              transform: 'translateX(-50%)' // Centra horizontalmente
+              transform: 'translateX(-50%)', // Centra horizontalmente
             }}
           >
             Sistema de Automatización Hotelera
