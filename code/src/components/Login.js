@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { TextField, Button, Typography, Container } from '@mui/material';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 
 function Login({ onLogin }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate(); // Hook para redirigir
 
     const handleLogin = () => {
         // Validación de usuario (esto puede ser más complejo según tu lógica de autenticación)
         if (username === "admin" && password === "password") {
             onLogin(); // Llama a onLogin para actualizar isAuthenticated en App.js
+            navigate('/dashboard'); // Redirige al Dashboard después de autenticarse
         } else {
             setError("Usuario o contraseña incorrectos");
         }
