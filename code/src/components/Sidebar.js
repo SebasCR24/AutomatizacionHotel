@@ -18,28 +18,52 @@ const Sidebar = ({ isOpen, handleDrawerToggle, onSearch, onShowCalendar, onFilte
             onClose={handleDrawerToggle}
         >
             <List>
-                <ListItem button onClick={() => navigate('/')}>
+                <ListItem 
+                    button 
+                    onClick={() => navigate('/dashboard')} 
+                    style={{ cursor: 'pointer' }} // Cambia el cursor a una flecha
+                >
                     <ListItemIcon><HomeIcon /></ListItemIcon>
                     <ListItemText primary="Inicio" />
                 </ListItem>
-                <ListItem button onClick={onSearch}>
+                <ListItem 
+                    button 
+                    onClick={onSearch} 
+                    style={{ cursor: 'pointer' }} // Cambia el cursor a una flecha
+                >
                     <ListItemIcon><SearchIcon /></ListItemIcon>
                     <ListItemText primary="Buscar" />
                 </ListItem>
-                <ListItem button onClick={onShowCalendar}>
+                <ListItem 
+                    button 
+                    onClick={onShowCalendar} 
+                    style={{ cursor: 'pointer' }} // Cambia el cursor a una flecha
+                >
                     <ListItemIcon><CalendarTodayIcon /></ListItemIcon>
                     <ListItemText primary="Calendario" />
                 </ListItem>
-                <ListItem button onClick={onFilter}>
+                <ListItem 
+                    button 
+                    onClick={onFilter} 
+                    style={{ cursor: 'pointer' }} // Cambia el cursor a una flecha
+                >
                     <ListItemIcon><FilterListIcon /></ListItemIcon>
                     <ListItemText primary="Filtrar" />
                 </ListItem>
-                <ListItem button onClick={() => navigate('/food-requests')}>
+                <ListItem 
+                    button 
+                    onClick={() => navigate('/food-requests')} 
+                    style={{ cursor: 'pointer' }} // Cambia el cursor a una flecha
+                >
                     <ListItemIcon><RestaurantMenuIcon /></ListItemIcon>
                     <ListItemText primary="Solicitudes de comida" />
                 </ListItem>
                 <Divider />
-                <ListItem button onClick={onLogout}>
+                <ListItem 
+                    button 
+                    onClick={onLogout} 
+                    style={{ cursor: 'pointer' }} // Cambia el cursor a una flecha
+                >
                     <ListItemIcon><ExitToAppIcon /></ListItemIcon>
                     <ListItemText primary="Cerrar Sesión" />
                 </ListItem>

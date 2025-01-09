@@ -182,20 +182,6 @@ const Dashboard = () => {
                 Menú del Día
               </Typography>
               <TextField
-                label="Desayuno Americano"
-                value={menu.breakfastAmerican}
-                onChange={(e) => setMenu({ ...menu, breakfastAmerican: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-              <TextField
-                label="Desayuno Continental"
-                value={menu.breakfastContinental}
-                onChange={(e) => setMenu({ ...menu, breakfastContinental: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-              <TextField
                 label="Sopa (Almuerzo Opción 1)"
                 value={menu.lunchSoup}
                 onChange={(e) => setMenu({ ...menu, lunchSoup: e.target.value })}
