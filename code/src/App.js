@@ -9,6 +9,7 @@ import FoodRequests from './components/FoodRequest';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [isOpen, setIsOpen] = useState(false); // Estado para controlar el Sidebar
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -23,6 +24,11 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    setIsOpen(false); // Cerrar el Sidebar al cerrar sesión
+  };
+
+  const handleDrawerToggle = () => {
+    setIsOpen(!isOpen); // Alternar el estado del Sidebar
   };
 
   return (
@@ -30,8 +36,12 @@ function App() {
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {user ? (
           <>
-            <Header />
-            <Sidebar role={user.role} onLogout={handleLogout} />
+            <Header handleDrawerToggle={handleDrawerToggle} />
+            <Sidebar 
+              isOpen={isOpen} 
+              handleDrawerToggle={handleDrawerToggle} 
+              onLogout={handleLogout} 
+            />
             <div style={{ flex: 1, padding: '20px' }}>
               <Routes>
                 <Route path="/dashboard" element={<Dashboard role={user.role} />} />

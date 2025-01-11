@@ -10,12 +10,15 @@ const Dashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [menu, setMenu] = useState({
-    breakfastAmerican: '',
-    breakfastContinental: '',
-    lunchSoup: '',
-    lunchRice: ''
+  const [dailyMenu, setDailyMenu] = useState({
+    soup1: '',
+    soup2: '',
+    mainDish1: '',
+    mainDish2: '',
+    price: '',
   });
+
+  const [menuMessage, setMenuMessage] = useState('');
 
   const API_BASE_URL = 'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/room-service-requests';
 
@@ -81,10 +84,39 @@ const Dashboard = () => {
     }
   };
 
-  const handleMenuSubmit = () => {
-    console.log('Menú actualizado:', menu);
-    // Aquí puedes agregar la lógica para enviar el menú a tu backend o API
-    alert('Menú actualizado correctamente.');
+  const handleMenuChange = (e) => {
+    const { name, value } = e.target;
+    setDailyMenu({ ...dailyMenu, [name]: value });
+  };
+
+  const handleMenuSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('http://localhost:5000/api/daily-menu' ,{
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dailyMenu),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMenuMessage(data.message);
+        setDailyMenu({
+          soup1: '',
+          soup2: '',
+          mainDish1: '',
+          mainDish2: '',
+          price: '',
+        });
+      } else {
+        const errorData = await response.json();
+        setMenuMessage(errorData.message || 'Error al registrar el menú.');
+      }
+    } catch (err) {
+      console.error('Error al enviar el menú del día:', err);
+      setMenuMessage('Error al registrar el menú del día.');
+    }
   };
 
   useEffect(() => {
@@ -181,42 +213,67 @@ const Dashboard = () => {
               <Typography variant="h6" gutterBottom style={{ fontWeight: 500, textAlign: 'center' }}>
                 Menú del Día
               </Typography>
-              <TextField
-                label="Sopa (Almuerzo Opción 1)"
-                value={menu.lunchSoup}
-                onChange={(e) => setMenu({ ...menu, lunchSoup: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-              <TextField
-                label="Sopa (Almuerzo Opción 2)"
-                value={menu.lunchSoup}
-                onChange={(e) => setMenu({ ...menu, lunchSoup: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-              <TextField
-                label="Arroz (Almuerzo Opción 1)"
-                value={menu.lunchRice}
-                onChange={(e) => setMenu({ ...menu, lunchRice: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-              <TextField
-                label="Arroz (Almuerzo Opción 2)"
-                value={menu.lunchRice}
-                onChange={(e) => setMenu({ ...menu, lunchRice: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-              <Button
-                variant="contained"
-                fullWidth
-                style={{ backgroundColor: '#2196f3', color: '#fff' }}
-                onClick={handleMenuSubmit}
-              >
-                Guardar Menú
-              </Button>
+              <form onSubmit={handleMenuSubmit}>
+                <TextField
+                  label="Sopa 1"
+                  name="soup1"
+                  value={dailyMenu.soup1}
+                  onChange={handleMenuChange}
+                  fullWidth
+                  style={{ marginBottom: '15px' }}
+                  required
+                />
+                <TextField
+                  label="Sopa 2"
+                  name="soup2"
+                  value={dailyMenu.soup2}
+                  onChange={handleMenuChange}
+                  fullWidth
+                  style={{ marginBottom: '15px' }}
+                  required
+                />
+                <TextField
+                  label="Plato Principal 1"
+                  name="mainDish1"
+                  value={dailyMenu.mainDish1}
+                  onChange={handleMenuChange}
+                  fullWidth
+                  style={{ marginBottom: '15px' }}
+                  required
+                />
+                <TextField
+                  label="Plato Principal 2"
+                  name="mainDish2"
+                  value={dailyMenu.mainDish2}
+                  onChange={handleMenuChange}
+                  fullWidth
+                  style={{ marginBottom: '15px' }}
+                  required
+                />
+                <TextField
+                  label="Precio"
+                  name="price"
+                  type="number"
+                  value={dailyMenu.price}
+                  onChange={handleMenuChange}
+                  fullWidth
+                  style={{ marginBottom: '15px' }}
+                  required
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  fullWidth
+                >
+                  Guardar Menú
+                </Button>
+              </form>
+              {menuMessage && (
+                <Typography color="primary" style={{ marginTop: '10px' }}>
+                  {menuMessage}
+                </Typography>
+              )}
             </Paper>
           </Grid>
         </Grid>
