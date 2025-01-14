@@ -38,6 +38,26 @@ const Dashboard = () => {
     }
   };
 
+  const fetchMenu = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/daily-menu`);
+      if (response.ok) {
+        const menu = await response.json();
+        setDailyMenu({
+          soup1: menu.soup1 || '',
+          soup2: menu.soup2 || '',
+          mainDish1: menu.mainDish1 || '',
+          mainDish2: menu.mainDish2 || '',
+          price: menu.price || '',
+        });
+      } else {
+        console.error('Error al obtener el menú del día:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error al cargar el menú del día:', error);
+    }
+  };  
+
   const handleUpdate = async () => {
     try {
       const { _id, ...updates } = selectedRequest;
@@ -109,6 +129,15 @@ const Dashboard = () => {
           mainDish2: '',
           price: '',
         });
+        // Actualizar el estado inmediatamente con el nuevo menú
+      setDailyMenu((prevMenu) => ({
+        ...prevMenu,
+        ...dailyMenu,
+      }));
+      // Limpiar el mensaje después de 3 segundos
+      setTimeout(() => {
+        setMenuMessage('');
+      }, 3000);
       } else {
         const errorData = await response.json();
         setMenuMessage(errorData.message || 'Error al registrar el menú.');
@@ -121,6 +150,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchRequests();
+    fetchMenu();
   }, []);
 
   return (
@@ -151,7 +181,21 @@ const Dashboard = () => {
                             Habitación: {request.roomNumber}
                           </Typography>
                           <Typography><strong>Fecha de Solicitud:</strong> {moment(request.requestTime).format('LLL')}</Typography>
-                          <Typography><strong>Estado:</strong> {request.state}</Typography>
+                          <Typography><strong>Estado:</strong>
+                          <Chip
+  label={request.state}
+  style={{
+    backgroundColor:
+      request.state === 'Pendiente'
+        ? '#ff9800' 
+        : request.state === 'Realizado'
+        ? '#4caf50' 
+        : '#f44336', 
+    color: '#fff',
+  }}
+/>
+
+                          </Typography>
                           <Typography><strong>Solicitud:</strong> {request.specificRequest}</Typography>
                           <Typography><strong>Tipo:</strong> {request.requestType}</Typography>
                           <Typography><strong>Hora Solicitada:</strong> {request.time}</Typography>
@@ -280,74 +324,127 @@ const Dashboard = () => {
       </Container>
 
       <Dialog open={openUpdateDialog} onClose={() => setOpenUpdateDialog(false)}>
-        <DialogTitle style={{ textAlign: 'center', fontWeight: 600, color: '#2196f3' }}>Actualizar Solicitud</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                label="Habitación"
-                value={selectedRequest?.roomNumber || ''}
-                onChange={(e) => setSelectedRequest({ ...selectedRequest, roomNumber: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px', marginTop: '10px' }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Estado"
-                value={selectedRequest?.state || ''}
-                onChange={(e) => setSelectedRequest({ ...selectedRequest, state: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Solicitud"
-                value={selectedRequest?.specificRequest || ''}
-                onChange={(e) => setSelectedRequest({ ...selectedRequest, specificRequest: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Tipo"
-                value={selectedRequest?.requestType || ''}
-                onChange={(e) => setSelectedRequest({ ...selectedRequest, requestType: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Hora Solicitada"
-                type="time"
-                value={selectedRequest?.time || ''}
-                onChange={(e) => setSelectedRequest({ ...selectedRequest, time: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Prioridad"
-                value={selectedRequest?.priority || ''}
-                onChange={(e) => setSelectedRequest({ ...selectedRequest, priority: e.target.value })}
-                fullWidth
-                style={{ marginBottom: '15px' }}
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions style={{ justifyContent: 'center', marginBottom: '10px' }}>
-          <Button onClick={() => setOpenUpdateDialog(false)} style={{ color: '#ff1744' }}>Cancelar</Button>
-          <Button onClick={handleUpdate} style={{ backgroundColor: '#2196f3', color: '#fff' }}>Actualizar</Button>
-        </DialogActions>
-      </Dialog>
+  <DialogTitle style={{ textAlign: 'center', fontWeight: 600, color: '#2196f3' }}>
+    Actualizar Solicitud
+  </DialogTitle>
+  <DialogContent>
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <TextField
+          label="Habitación"
+          value={selectedRequest?.roomNumber || ''}
+          onChange={(e) => setSelectedRequest({ ...selectedRequest, roomNumber: e.target.value })}
+          fullWidth
+          style={{ marginBottom: '15px', marginTop: '10px' }}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <TextField
+          select
+          label="Estado"
+          value={selectedRequest?.state || ''}
+          onChange={(e) => setSelectedRequest({ ...selectedRequest, state: e.target.value })}
+          fullWidth
+          style={{ marginBottom: '15px' }}
+          SelectProps={{
+            native: true,
+          }}
+          InputProps={{
+            style: {
+              backgroundColor:
+                selectedRequest?.state === 'Pendiente'
+                  ? '#fff3cd'
+                  : selectedRequest?.state === 'Realizado'
+                  ? '#d4edda'
+                  : selectedRequest?.state === 'Cancelado'
+                  ? '#f8d7da'
+                  : '#fff',
+            },
+          }}
+        >
+          <option value="" disabled>
+            Selecciona un estado
+          </option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Realizado">Realizado</option>
+          <option value="Cancelado">Cancelado</option>
+        </TextField>
+      </Grid>
+      <Grid item xs={12}>
+        <TextField
+          label="Solicitud"
+          value={selectedRequest?.specificRequest || ''}
+          onChange={(e) => setSelectedRequest({ ...selectedRequest, specificRequest: e.target.value })}
+          fullWidth
+          style={{ marginBottom: '15px' }}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <TextField
+          label="Tipo"
+          value={selectedRequest?.requestType || ''}
+          onChange={(e) => setSelectedRequest({ ...selectedRequest, requestType: e.target.value })}
+          fullWidth
+          style={{ marginBottom: '15px' }}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <TextField
+          label="Hora Solicitada"
+          type="time"
+          value={selectedRequest?.time || ''}
+          onChange={(e) => setSelectedRequest({ ...selectedRequest, time: e.target.value })}
+          fullWidth
+          style={{ marginBottom: '15px' }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <TextField
+          select
+          label="Prioridad"
+          value={selectedRequest?.priority || ''}
+          onChange={(e) => setSelectedRequest({ ...selectedRequest, priority: e.target.value })}
+          fullWidth
+          style={{ marginBottom: '15px' }}
+          SelectProps={{
+            native: true,
+          }}
+          InputProps={{
+            style: {
+              backgroundColor:
+                selectedRequest?.priority === 'Alta'
+                  ? '#f8d7da'
+                  : selectedRequest?.priority === 'Media'
+                  ? '#fff3cd'
+                  : selectedRequest?.priority === 'Baja'
+                  ? '#d4edda'
+                  : '#fff',
+            },
+          }}
+        >
+          <option value="" disabled>
+            Selecciona una prioridad
+          </option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+        </TextField>
+      </Grid>
+    </Grid>
+  </DialogContent>
+  <DialogActions style={{ justifyContent: 'center', marginBottom: '10px' }}>
+    <Button onClick={() => setOpenUpdateDialog(false)} style={{ color: '#ff1744' }}>
+      Cancelar
+    </Button>
+    <Button onClick={handleUpdate} style={{ backgroundColor: '#2196f3', color: '#fff' }}>
+      Actualizar
+    </Button>
+  </DialogActions>
+</Dialog>
+
 
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
         <DialogTitle style={{ textAlign: 'center', color: '#ff1744' }}>Confirmar Eliminación</DialogTitle>

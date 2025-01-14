@@ -51,6 +51,24 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Ruta para obtener el Menú del Día
+app.get('/api/daily-menu', async (req, res) => {
+  try {
+    const collection = mongoose.connection.collection('DailyMenu');
+    const menu = await collection.findOne({}, { sort: { createdAt: -1 } }); // Obtiene el menú más reciente
+
+    if (menu) {
+      res.status(200).json(menu);
+    } else {
+      res.status(404).json({ message: 'No hay menú disponible.' });
+    }
+  } catch (error) {
+    console.error('Error al obtener el menú del día:', error);
+    res.status(500).json({ message: 'Error al obtener el menú del día.' });
+  }
+});
+
+
 // Ruta para sobrescribir el menú del día
 app.put('/api/daily-menu', async (req, res) => {
   const { soup1, soup2, mainDish1, mainDish2, price } = req.body;
