@@ -43,11 +43,19 @@ function App() {
               onLogout={handleLogout} 
             />
             <div style={{ flex: 1, padding: '20px' }}>
-              <Routes>
-                <Route path="/dashboard" element={<Dashboard role={user.role} />} />
-                <Route path="/food-requests" element={<FoodRequests />} />
-                <Route path="*" element={<Navigate to="/dashboard" />} />
-              </Routes>
+            <Routes>
+  <Route
+    path="/dashboard"
+    element={<Dashboard />} // Permitir acceso a ambos roles
+  />
+  <Route
+    path="/food-requests"
+    element={user ? <FoodRequests /> : <Navigate to="/login" />}
+  />
+  <Route path="*" element={<Navigate to="/login" />} />
+</Routes>
+
+
             </div>
             <Footer />
           </>

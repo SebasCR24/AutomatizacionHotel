@@ -19,8 +19,10 @@ const Dashboard = () => {
   });
 
   const [menuMessage, setMenuMessage] = useState('');
+  const [isEditingMenu, setIsEditingMenu] = useState(false); // Nuevo estado para el formulario de edición
 
   const API_BASE_URL = 'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/room-service-requests';
+  const userRole = JSON.parse(localStorage.getItem('user'))?.role; // Obtener rol del usuario
 
   const fetchRequests = async () => {
     try {
@@ -38,25 +40,28 @@ const Dashboard = () => {
     }
   };
 
-  const fetchMenu = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/daily-menu`);
-      if (response.ok) {
-        const menu = await response.json();
-        setDailyMenu({
-          soup1: menu.soup1 || '',
-          soup2: menu.soup2 || '',
-          mainDish1: menu.mainDish1 || '',
-          mainDish2: menu.mainDish2 || '',
-          price: menu.price || '',
-        });
-      } else {
-        console.error('Error al obtener el menú del día:', response.statusText);
-      }
-    } catch (error) {
-      console.error('Error al cargar el menú del día:', error);
+const fetchMenu = async () => {
+  try {
+    const role = JSON.parse(localStorage.getItem('user'))?.role || '';
+    const response = await fetch('http://localhost:5000/api/daily-menu', {
+      headers: { 'x-role': role },
+    });
+    if (response.ok) {
+      const menu = await response.json();
+      setDailyMenu({
+        soup1: menu.soup1 || '',
+        soup2: menu.soup2 || '',
+        mainDish1: menu.mainDish1 || '',
+        mainDish2: menu.mainDish2 || '',
+        price: menu.price || '',
+      });
+    } else {
+      console.error('Error al obtener el menú del día:', response.statusText);
     }
-  };  
+  } catch (error) {
+    console.error('Error al cargar el menú del día:', error);
+  }
+};
 
   const handleUpdate = async () => {
     try {
@@ -113,31 +118,17 @@ const Dashboard = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:5000/api/daily-menu' ,{
+      const response = await fetch('http://localhost:5000/api/daily-menu', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-role': userRole },
         body: JSON.stringify(dailyMenu),
       });
 
       if (response.ok) {
         const data = await response.json();
         setMenuMessage(data.message);
-        setDailyMenu({
-          soup1: '',
-          soup2: '',
-          mainDish1: '',
-          mainDish2: '',
-          price: '',
-        });
-        // Actualizar el estado inmediatamente con el nuevo menú
-      setDailyMenu((prevMenu) => ({
-        ...prevMenu,
-        ...dailyMenu,
-      }));
-      // Limpiar el mensaje después de 3 segundos
-      setTimeout(() => {
-        setMenuMessage('');
-      }, 3000);
+        setIsEditingMenu(false); // Cierra el formulario de edición automáticamente
+        fetchMenu(); // Actualiza la información del menú desde la base de datos
       } else {
         const errorData = await response.json();
         setMenuMessage(errorData.message || 'Error al registrar el menú.');
@@ -182,67 +173,64 @@ const Dashboard = () => {
                           </Typography>
                           <Typography><strong>Fecha de Solicitud:</strong> {moment(request.requestTime).format('LLL')}</Typography>
                           <Typography><strong>Estado:</strong>
-                          <Chip
-  label={request.state}
-  style={{
-    backgroundColor:
-      request.state === 'Pendiente'
-        ? '#ff9800' 
-        : request.state === 'Realizado'
-        ? '#4caf50' 
-        : '#f44336', 
-    color: '#fff',
-  }}
-/>
-
-                          </Typography>
-                          <Typography><strong>Solicitud:</strong> {request.specificRequest}</Typography>
-                          <Typography><strong>Tipo:</strong> {request.requestType}</Typography>
-                          <Typography><strong>Hora Solicitada:</strong> {request.time}</Typography>
-                          <Typography><strong>Prioridad:</strong> 
                             <Chip
-                              label={request.priority}
+                              label={request.state}
                               style={{
                                 backgroundColor:
-                                  request.priority === 'alta'
-                                    ? '#f44336'
-                                    : request.priority === 'media'
-                                    ? '#ff9800'
-                                    : '#4caf50',
+                                  request.state === 'Pendiente' ? '#ff9800'
+                                  : request.state === 'Realizado' ? '#4caf50'
+                                  : '#f44336',
                                 color: '#fff',
                               }}
                             />
                           </Typography>
-                          <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '15px' }}>
-                            <Button
-                              variant="contained"
+                          <Typography><strong>Solicitud:</strong> {request.specificRequest}</Typography>
+                          <Typography><strong>Tipo:</strong> {request.requestType}</Typography>
+                          <Typography><strong>Hora Solicitada:</strong> {request.time}</Typography>
+                          <Typography><strong>Prioridad:</strong>
+                            <Chip
+                              label={request.priority}
                               style={{
-                                backgroundColor: '#9436cd',
+                                backgroundColor:
+                                  request.priority === 'Alta' ? '#f44336'
+                                  : request.priority === 'Media' ? '#ff9800'
+                                  : '#4caf50',
                                 color: '#fff',
-                                marginRight: '10px',
-                                borderRadius: '25px',
                               }}
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setOpenUpdateDialog(true);
-                              }}
-                            >
-                              Actualizar
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              color="error"
-                              style={{
-                                borderRadius: '25px',
-                              }}
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setOpenDeleteDialog(true);
-                              }}
-                            >
-                              Eliminar
-                            </Button>
-                          </div>
+                            />
+                          </Typography>
+                          {userRole === 'admin' && ( // Mostrar botones solo si el rol es admin
+                            <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '15px' }}>
+                              <Button
+                                variant="contained"
+                                style={{
+                                  backgroundColor: '#9436cd',
+                                  color: '#fff',
+                                  marginRight: '10px',
+                                  borderRadius: '25px',
+                                }}
+                                onClick={() => {
+                                  setSelectedRequest(request);
+                                  setOpenUpdateDialog(true);
+                                }}
+                              >
+                                Actualizar
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                style={{
+                                  borderRadius: '25px',
+                                }}
+                                onClick={() => {
+                                  setSelectedRequest(request);
+                                  setOpenDeleteDialog(true);
+                                }}
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     </ListItem>
@@ -253,73 +241,48 @@ const Dashboard = () => {
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Paper elevation={5} style={{ padding: '20px', borderRadius: '15px', backgroundColor: '#fff' }}>
-              <Typography variant="h6" gutterBottom style={{ fontWeight: 500, textAlign: 'center' }}>
-                Menú del Día
-              </Typography>
-              <form onSubmit={handleMenuSubmit}>
-                <TextField
-                  label="Sopa 1"
-                  name="soup1"
-                  value={dailyMenu.soup1}
-                  onChange={handleMenuChange}
-                  fullWidth
-                  style={{ marginBottom: '15px' }}
-                  required
-                />
-                <TextField
-                  label="Sopa 2"
-                  name="soup2"
-                  value={dailyMenu.soup2}
-                  onChange={handleMenuChange}
-                  fullWidth
-                  style={{ marginBottom: '15px' }}
-                  required
-                />
-                <TextField
-                  label="Plato Principal 1"
-                  name="mainDish1"
-                  value={dailyMenu.mainDish1}
-                  onChange={handleMenuChange}
-                  fullWidth
-                  style={{ marginBottom: '15px' }}
-                  required
-                />
-                <TextField
-                  label="Plato Principal 2"
-                  name="mainDish2"
-                  value={dailyMenu.mainDish2}
-                  onChange={handleMenuChange}
-                  fullWidth
-                  style={{ marginBottom: '15px' }}
-                  required
-                />
-                <TextField
-                  label="Precio"
-                  name="price"
-                  type="number"
-                  value={dailyMenu.price}
-                  onChange={handleMenuChange}
-                  fullWidth
-                  style={{ marginBottom: '15px' }}
-                  required
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  fullWidth
-                >
-                  Guardar Menú
-                </Button>
-              </form>
-              {menuMessage && (
-                <Typography color="primary" style={{ marginTop: '10px' }}>
-                  {menuMessage}
-                </Typography>
+  <Paper elevation={5} style={{ padding: '20px', borderRadius: '15px', backgroundColor: '#fff' }}>
+    <Typography variant="h6" gutterBottom style={{ fontWeight: 500, textAlign: 'center' }}>
+      Menú del Día
+      </Typography>
+              {isEditingMenu ? (
+                <form onSubmit={handleMenuSubmit}>
+                  <TextField label="Sopa 1" name="soup1" value={dailyMenu.soup1} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
+                  <TextField label="Sopa 2" name="soup2" value={dailyMenu.soup2} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
+                  <TextField label="Plato Principal 1" name="mainDish1" value={dailyMenu.mainDish1} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
+                  <TextField label="Plato Principal 2" name="mainDish2" value={dailyMenu.mainDish2} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
+                  <TextField label="Precio (USD)" name="price" type="number" value={dailyMenu.price} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                    <Button variant="outlined" color="secondary" onClick={() => setIsEditingMenu(false)}>
+                      Cancelar
+                    </Button>
+                    <Button variant="contained" color="primary" type="submit">
+                      Guardar Menú
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <div>
+                  <Typography><strong>Sopa 1:</strong> {dailyMenu.soup1}</Typography>
+                  <Typography><strong>Sopa 2:</strong> {dailyMenu.soup2}</Typography>
+                  <Typography><strong>Plato Principal 1:</strong> {dailyMenu.mainDish1}</Typography>
+                  <Typography><strong>Plato Principal 2:</strong> {dailyMenu.mainDish2}</Typography>
+                  <Typography><strong>Precio:</strong> ${dailyMenu.price}</Typography>
+                  {userRole === 'admin' && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => setIsEditingMenu(true)}
+                      style={{ marginTop: '20px' }}
+                    >
+                      Editar Menú
+                    </Button>
+                  )}
+                </div>
               )}
             </Paper>
           </Grid>
+
         </Grid>
       </Container>
 

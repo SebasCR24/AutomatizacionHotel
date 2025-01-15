@@ -1,8 +1,11 @@
 import React from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
+/*
 import SearchIcon from '@mui/icons-material/Search';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FilterListIcon from '@mui/icons-material/FilterList';
+*/
+
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import HomeIcon from '@mui/icons-material/Home';
@@ -26,7 +29,8 @@ const Sidebar = ({ isOpen, handleDrawerToggle, onSearch, onShowCalendar, onFilte
                     <ListItemIcon><HomeIcon /></ListItemIcon>
                     <ListItemText primary="Inicio" />
                 </ListItem>
-                <ListItem 
+                {/* Opciones desactivadas temporalmente para futuros usos */}
+                {/* <ListItem 
                     button 
                     onClick={onSearch} 
                     style={{ cursor: 'pointer' }} // Cambia el cursor a una flecha
@@ -49,7 +53,7 @@ const Sidebar = ({ isOpen, handleDrawerToggle, onSearch, onShowCalendar, onFilte
                 >
                     <ListItemIcon><FilterListIcon /></ListItemIcon>
                     <ListItemText primary="Filtrar" />
-                </ListItem>
+                </ListItem> */}
                 <ListItem 
                     button 
                     onClick={() => navigate('/food-requests')} 

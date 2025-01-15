@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const bcrypt = require('bcrypt'); // Añadido para cifrado de contraseñas
 
 const app = express();
 const PORT = 5000;
@@ -29,34 +30,69 @@ mongoose.connection.once('open', () => {
 const userSchema = new mongoose.Schema({
   username: String,
   password: String,
-  role: String, // Aunque no lo usemos ahora, lo dejamos aquí para el futuro
+  role: String,
 });
 
-const User = mongoose.model('credentials', userSchema);
+const User = mongoose.model('Credentials', userSchema);
 
-// Ruta de Login
+// Registro de usuario con cifrado de credenciales
+app.post('/api/register', async (req, res) => {
+  const { username, password, role } = req.body;
+
+  if (!username || !password || !role) {
+    return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10); // Cifra la contraseña
+    const newUser = new User({ username, password: hashedPassword, role });
+    await newUser.save();
+    res.status(201).json({ message: 'Usuario registrado exitosamente' });
+  } catch (error) {
+    console.error('Error al registrar usuario:', error);
+    res.status(500).json({ message: 'Error al registrar usuario' });
+  }
+});
+
+// Ruta de Login con verificación de contraseña cifrada
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    console.log('Datos recibidos:', { username, password });
-    const user = await User.findOne({ username, password }); // Busca el usuario con las credenciales
-    if (user) {
-      res.status(200).json({ username: user.username, role: user.role });
-    } else {
-      res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
-    }
+      const users = await User.find();
+      const user = await Promise.all(
+          users.map(async (u) => ({
+              match: await bcrypt.compare(username, u.username),
+              data: u,
+          }))
+      ).then((results) => results.find((u) => u.match)?.data);
+
+      if (user && (await bcrypt.compare(password, user.password))) {
+          res.status(200).json({ username: user.username, role: user.role });
+      } else {
+          res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+      }
   } catch (error) {
-    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+      res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
 });
 
-// Ruta para obtener el Menú del Día
+
+// Middleware para verificar roles
+const checkRole = (roles) => (req, res, next) => {
+  const role = req.header('x-role');
+  if (!role || !roles.includes(role)) {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  next();
+};
+
+
+// Ruta para obtener el Menú del Día (admin y user pueden acceder)
 app.get('/api/daily-menu', async (req, res) => {
   try {
     const collection = mongoose.connection.collection('DailyMenu');
-    const menu = await collection.findOne({}, { sort: { createdAt: -1 } }); // Obtiene el menú más reciente
-
+    const menu = await collection.findOne({}, { sort: { updatedAt: -1 } });
     if (menu) {
       res.status(200).json(menu);
     } else {
@@ -69,8 +105,8 @@ app.get('/api/daily-menu', async (req, res) => {
 });
 
 
-// Ruta para sobrescribir el menú del día
-app.put('/api/daily-menu', async (req, res) => {
+// Ruta para sobrescribir el Menú del Día (solo admin puede modificar)
+app.put('/api/daily-menu', checkRole(['admin']), async (req, res) => {
   const { soup1, soup2, mainDish1, mainDish2, price } = req.body;
 
   if (!soup1 || !soup2 || !mainDish1 || !mainDish2 || !price) {
@@ -85,26 +121,21 @@ app.put('/api/daily-menu', async (req, res) => {
       mainDish1,
       mainDish2,
       price: parseFloat(price),
-      updatedAt: new Date(), // Fecha de la última actualización
+      updatedAt: new Date(),
     };
 
-    // Sobrescribir el único documento existente o crearlo si no existe
-    const result = await collection.updateOne(
-      {}, // Filtro vacío para seleccionar el único documento
-      { $set: newMenu }, // Sobrescribir el documento con los nuevos datos
-      { upsert: true } // Crear el documento si no existe
-    );
-
-    if (result.upsertedCount > 0) {
-      res.status(201).json({ message: 'Menú del día creado exitosamente.' });
-    } else {
-      res.status(200).json({ message: 'Menú del día actualizado exitosamente.' });
-    }
+    const result = await collection.updateOne({}, { $set: newMenu }, { upsert: true });
+    res.status(result.upsertedCount > 0 ? 201 : 200).json({
+      message: result.upsertedCount > 0
+        ? 'Menú del día creado exitosamente.'
+        : 'Menú del día actualizado exitosamente.',
+    });
   } catch (error) {
     console.error('Error al actualizar el menú del día:', error);
     res.status(500).json({ message: 'Error al actualizar el menú del día.' });
   }
 });
+
 
 // Iniciar el servidor
 app.listen(PORT, () => {
