@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
   role: String,
 });
 
-const User = mongoose.model('Credentials', userSchema);
+const User = mongoose.model('User', userSchema, 'Credentials');
 
 // Registro de usuario con cifrado de credenciales
 app.post('/api/register', async (req, res) => {
@@ -54,12 +54,19 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Ruta de Login con verificación de contraseña cifrada
+// Ruta de Login con comparación de campos cifrados
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ username }); // Busca el usuario por nombre
+    const users = await User.find(); // Obtener todos los usuarios
+    const user = await Promise.all(
+      users.map(async (u) => ({
+        match: await bcrypt.compare(username, u.username), // Comparar username
+        data: u,
+      }))
+    ).then((results) => results.find((u) => u.match)?.data); // Obtener el usuario que coincide
+
     if (user && (await bcrypt.compare(password, user.password))) {
       res.status(200).json({ username: user.username, role: user.role });
     } else {
@@ -81,7 +88,6 @@ const checkRole = (roles) => (req, res, next) => {
   next();
 };
 
-
 // Ruta para obtener el Menú del Día (admin y user pueden acceder)
 app.get('/api/daily-menu', async (req, res) => {
   try {
@@ -97,7 +103,6 @@ app.get('/api/daily-menu', async (req, res) => {
     res.status(500).json({ message: 'Error al obtener el menú del día.' });
   }
 });
-
 
 // Ruta para sobrescribir el Menú del Día (solo admin puede modificar)
 app.put('/api/daily-menu', checkRole(['admin']), async (req, res) => {
@@ -129,7 +134,6 @@ app.put('/api/daily-menu', checkRole(['admin']), async (req, res) => {
     res.status(500).json({ message: 'Error al actualizar el menú del día.' });
   }
 });
-
 
 // Iniciar el servidor
 app.listen(PORT, () => {

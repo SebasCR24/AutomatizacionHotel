@@ -9,7 +9,7 @@ import FoodRequests from './components/FoodRequest';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [isOpen, setIsOpen] = useState(false); // Estado para controlar el Sidebar
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -24,38 +24,26 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
-    setIsOpen(false); // Cerrar el Sidebar al cerrar sesión
+    setIsOpen(false);
   };
 
   const handleDrawerToggle = () => {
-    setIsOpen(!isOpen); // Alternar el estado del Sidebar
+    setIsOpen(!isOpen);
   };
 
   return (
-    <Router>
+    <Router basename="/">
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {user ? (
           <>
             <Header handleDrawerToggle={handleDrawerToggle} />
-            <Sidebar 
-              isOpen={isOpen} 
-              handleDrawerToggle={handleDrawerToggle} 
-              onLogout={handleLogout} 
-            />
+            <Sidebar isOpen={isOpen} handleDrawerToggle={handleDrawerToggle} onLogout={handleLogout} />
             <div style={{ flex: 1, padding: '20px' }}>
-            <Routes>
-  <Route
-    path="/dashboard"
-    element={<Dashboard />} // Permitir acceso a ambos roles
-  />
-  <Route
-    path="/food-requests"
-    element={user ? <FoodRequests /> : <Navigate to="/login" />}
-  />
-  <Route path="*" element={<Navigate to="/login" />} />
-</Routes>
-
-
+              <Routes>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/food-requests" element={user ? <FoodRequests /> : <Navigate to="/login" />} />
+                <Route path="*" element={<Navigate to="/dashboard" />} />
+              </Routes>
             </div>
             <Footer />
           </>
