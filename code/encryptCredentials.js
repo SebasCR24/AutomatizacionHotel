@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
   role: String,
 });
 
-const User = mongoose.model('credentials', userSchema);
+const User = mongoose.model('Credentials', userSchema);
 
 async function encryptExistingUsers() {
   try {
