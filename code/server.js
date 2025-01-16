@@ -59,23 +59,17 @@ app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-      const users = await User.find();
-      const user = await Promise.all(
-          users.map(async (u) => ({
-              match: await bcrypt.compare(username, u.username),
-              data: u,
-          }))
-      ).then((results) => results.find((u) => u.match)?.data);
-
-      if (user && (await bcrypt.compare(password, user.password))) {
-          res.status(200).json({ username: user.username, role: user.role });
-      } else {
-          res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
-      }
+    const user = await User.findOne({ username }); // Busca el usuario por nombre
+    if (user && (await bcrypt.compare(password, user.password))) {
+      res.status(200).json({ username: user.username, role: user.role });
+    } else {
+      res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+    }
   } catch (error) {
-      res.status(500).json({ message: 'Error en el servidor', error: error.message });
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
 });
+
 
 
 // Middleware para verificar roles
