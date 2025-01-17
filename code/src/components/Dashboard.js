@@ -117,27 +117,40 @@ const fetchMenu = async () => {
   const handleMenuSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await fetch('http://localhost:5000/api/daily-menu', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'x-role': userRole },
-        body: JSON.stringify(dailyMenu),
-      });
+    // Convertir valores vacíos a null
+    const sanitizedMenu = {
+        soup1: dailyMenu.soup1?.trim() || null,
+        soup2: dailyMenu.soup2?.trim() || null,
+        mainDish1: dailyMenu.mainDish1?.trim() || null,
+        mainDish2: dailyMenu.mainDish2?.trim() || null,
+        price: dailyMenu.price ? parseFloat(dailyMenu.price) : null, // Convertir precio a número o null
+    };
 
-      if (response.ok) {
-        const data = await response.json();
-        setMenuMessage(data.message);
-        setIsEditingMenu(false); // Cierra el formulario de edición automáticamente
-        fetchMenu(); // Actualiza la información del menú desde la base de datos
-      } else {
-        const errorData = await response.json();
-        setMenuMessage(errorData.message || 'Error al registrar el menú.');
-      }
+    try {
+        const response = await fetch('http://localhost:5000/api/daily-menu', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-role': userRole,
+            },
+            body: JSON.stringify(sanitizedMenu),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setMenuMessage(data.message);
+            setIsEditingMenu(false); // Cierra el formulario de edición automáticamente
+            fetchMenu(); // Actualiza el menú desde la base de datos
+        } else {
+            const errorData = await response.json();
+            setMenuMessage(errorData.message || 'Error al registrar el menú.');
+        }
     } catch (err) {
-      console.error('Error al enviar el menú del día:', err);
-      setMenuMessage('Error al registrar el menú del día.');
+        console.error('Error al enviar el menú del día:', err);
+        setMenuMessage('Error al registrar el menú del día.');
     }
-  };
+};
+
 
   useEffect(() => {
     fetchRequests();
@@ -247,11 +260,11 @@ const fetchMenu = async () => {
       </Typography>
               {isEditingMenu ? (
                 <form onSubmit={handleMenuSubmit}>
-                  <TextField label="Sopa 1" name="soup1" value={dailyMenu.soup1} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
-                  <TextField label="Sopa 2" name="soup2" value={dailyMenu.soup2} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
-                  <TextField label="Plato Principal 1" name="mainDish1" value={dailyMenu.mainDish1} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
-                  <TextField label="Plato Principal 2" name="mainDish2" value={dailyMenu.mainDish2} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
-                  <TextField label="Precio (USD)" name="price" type="number" value={dailyMenu.price} onChange={handleMenuChange} fullWidth required style={{ marginBottom: '20px' }}/>
+                  <TextField label="Sopa 1" name="soup1" value={dailyMenu.soup1} onChange={handleMenuChange} fullWidth style={{ marginBottom: '20px' }}/>
+                  <TextField label="Sopa 2" name="soup2" value={dailyMenu.soup2} onChange={handleMenuChange} fullWidth style={{ marginBottom: '20px' }}/>
+                  <TextField label="Plato Principal 1" name="mainDish1" value={dailyMenu.mainDish1} onChange={handleMenuChange} fullWidth style={{ marginBottom: '20px' }}/>
+                  <TextField label="Plato Principal 2" name="mainDish2" value={dailyMenu.mainDish2} onChange={handleMenuChange} fullWidth style={{ marginBottom: '20px' }}/>
+                  <TextField label="Precio (USD)" name="price" type="number" value={dailyMenu.price} onChange={handleMenuChange} fullWidth style={{ marginBottom: '20px' }}/>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
                     <Button variant="outlined" color="secondary" onClick={() => setIsEditingMenu(false)}>
                       Cancelar

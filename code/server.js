@@ -108,32 +108,29 @@ app.get('/api/daily-menu', async (req, res) => {
 app.put('/api/daily-menu', checkRole(['admin']), async (req, res) => {
   const { soup1, soup2, mainDish1, mainDish2, price } = req.body;
 
-  if (!soup1 || !soup2 || !mainDish1 || !mainDish2 || !price) {
-    return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
-  }
-
   try {
-    const collection = mongoose.connection.collection('DailyMenu');
-    const newMenu = {
-      soup1,
-      soup2,
-      mainDish1,
-      mainDish2,
-      price: parseFloat(price),
-      updatedAt: new Date(),
-    };
+      const collection = mongoose.connection.collection('DailyMenu');
+      const newMenu = {
+          soup1: soup1 || null,
+          soup2: soup2 || null,
+          mainDish1: mainDish1 || null,
+          mainDish2: mainDish2 || null,
+          price: price !== null ? parseFloat(price) : null,
+          updatedAt: new Date(),
+      };
 
-    const result = await collection.updateOne({}, { $set: newMenu }, { upsert: true });
-    res.status(result.upsertedCount > 0 ? 201 : 200).json({
-      message: result.upsertedCount > 0
-        ? 'Menú del día creado exitosamente.'
-        : 'Menú del día actualizado exitosamente.',
-    });
+      const result = await collection.updateOne({}, { $set: newMenu }, { upsert: true });
+      res.status(result.upsertedCount > 0 ? 201 : 200).json({
+          message: result.upsertedCount > 0
+              ? 'Menú del día creado exitosamente.'
+              : 'Menú del día actualizado exitosamente.',
+      });
   } catch (error) {
-    console.error('Error al actualizar el menú del día:', error);
-    res.status(500).json({ message: 'Error al actualizar el menú del día.' });
+      console.error('Error al actualizar el menú del día:', error);
+      res.status(500).json({ message: 'Error al actualizar el menú del día.' });
   }
 });
+
 
 // Iniciar el servidor
 app.listen(PORT, () => {
