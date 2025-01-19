@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import FoodRequests from './components/FoodRequest';
+import GuestRatings from './components/GuestRatings';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -42,6 +43,7 @@ function App() {
               <Routes>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/food-requests" element={user ? <FoodRequests /> : <Navigate to="/login" />} />
+                <Route path="/guest-ratings" element={user ? <GuestRatings /> : <Navigate to="/login" />} />
                 <Route path="*" element={<Navigate to="/dashboard" />} />
               </Routes>
             </div>
