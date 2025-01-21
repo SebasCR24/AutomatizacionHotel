@@ -143,19 +143,10 @@ app.put('/api/daily-menu', checkRole(['admin']), async (req, res) => {
     // Actualizar o insertar el DailyMenu
     const result = await collection.updateOne({}, { $set: newMenu }, { upsert: true });
 
-    // Actualizar todas las solicitudes de comida con el nuevo pinDelivery
-    if (pinDelivery) {
-      const foodServiceRequestsCollection = mongoose.connection.collection('FoodServiceRequests');
-      await foodServiceRequestsCollection.updateMany(
-        {},
-        { $set: { pinDelivery: pinDelivery } } // Actualiza el campo pinDelivery en todas las solicitudes
-      );
-    }
-
     res.status(result.upsertedCount > 0 ? 201 : 200).json({
       message: result.upsertedCount > 0
-        ? 'Menú del día creado exitosamente y solicitudes actualizadas.'
-        : 'Menú del día actualizado exitosamente y solicitudes actualizadas.',
+        ? 'Menú del día creado exitosamente'
+        : 'Menú del día actualizado exitosamente.',
     });
   } catch (error) {
     console.error('Error al actualizar el menú del día:', error);
