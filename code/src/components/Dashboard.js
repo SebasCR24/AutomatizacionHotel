@@ -54,6 +54,7 @@ const fetchMenu = async () => {
         mainDish1: menu.mainDish1 || '',
         mainDish2: menu.mainDish2 || '',
         price: menu.price || '',
+        pinDelivery: menu.pinDelivery || '',
       });
     } else {
       console.error('Error al obtener el menú del día:', response.statusText);
@@ -116,40 +117,41 @@ const fetchMenu = async () => {
 
   const handleMenuSubmit = async (e) => {
     e.preventDefault();
-
-    // Convertir valores vacíos a null
+  
     const sanitizedMenu = {
-        soup1: dailyMenu.soup1?.trim() || null,
-        soup2: dailyMenu.soup2?.trim() || null,
-        mainDish1: dailyMenu.mainDish1?.trim() || null,
-        mainDish2: dailyMenu.mainDish2?.trim() || null,
-        price: dailyMenu.price ? parseFloat(dailyMenu.price) : null, // Convertir precio a número o null
+      soup1: dailyMenu.soup1?.trim() || null,
+      soup2: dailyMenu.soup2?.trim() || null,
+      mainDish1: dailyMenu.mainDish1?.trim() || null,
+      mainDish2: dailyMenu.mainDish2?.trim() || null,
+      price: dailyMenu.price ? parseFloat(dailyMenu.price) : null,
+      pinDelivery: dailyMenu.pinDelivery?.trim() || null, // Asegúrate de incluir el pinDelivery
     };
-
+  
     try {
-        const response = await fetch('http://localhost:5000/api/daily-menu', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-role': userRole,
-            },
-            body: JSON.stringify(sanitizedMenu),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            setMenuMessage(data.message);
-            setIsEditingMenu(false); // Cierra el formulario de edición automáticamente
-            fetchMenu(); // Actualiza el menú desde la base de datos
-        } else {
-            const errorData = await response.json();
-            setMenuMessage(errorData.message || 'Error al registrar el menú.');
-        }
+      const response = await fetch('http://localhost:5000/api/daily-menu', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-role': userRole,
+        },
+        body: JSON.stringify(sanitizedMenu),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        setMenuMessage(data.message);
+        setIsEditingMenu(false);
+        fetchMenu(); // Actualiza el menú
+        fetchRequests(); // Actualiza las solicitudes para reflejar el nuevo pinDelivery
+      } else {
+        const errorData = await response.json();
+        setMenuMessage(errorData.message || 'Error al registrar el menú.');
+      }
     } catch (err) {
-        console.error('Error al enviar el menú del día:', err);
-        setMenuMessage('Error al registrar el menú del día.');
+      console.error('Error al enviar el menú del día:', err);
+      setMenuMessage('Error al registrar el menú del día.');
     }
-};
+  };  
 
 
   useEffect(() => {
@@ -265,6 +267,7 @@ const fetchMenu = async () => {
                   <TextField label="Plato Principal 1" name="mainDish1" value={dailyMenu.mainDish1} onChange={handleMenuChange} fullWidth style={{ marginBottom: '20px' }}/>
                   <TextField label="Plato Principal 2" name="mainDish2" value={dailyMenu.mainDish2} onChange={handleMenuChange} fullWidth style={{ marginBottom: '20px' }}/>
                   <TextField label="Precio (USD)" name="price" type="number" value={dailyMenu.price} onChange={handleMenuChange} fullWidth style={{ marginBottom: '20px' }}/>
+                  <TextField label="PIN de Entrega" name="pinDelivery" value={dailyMenu.pinDelivery} onChange={handleMenuChange} fullWidth style={{ marginBottom: '20px' }}/>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
                     <Button variant="outlined" color="secondary" onClick={() => setIsEditingMenu(false)}>
                       Cancelar
@@ -276,22 +279,23 @@ const fetchMenu = async () => {
                 </form>
               ) : (
                 <div>
-                  <Typography><strong>Sopa 1:</strong> {dailyMenu.soup1}</Typography>
-                  <Typography><strong>Sopa 2:</strong> {dailyMenu.soup2}</Typography>
-                  <Typography><strong>Plato Principal 1:</strong> {dailyMenu.mainDish1}</Typography>
-                  <Typography><strong>Plato Principal 2:</strong> {dailyMenu.mainDish2}</Typography>
-                  <Typography><strong>Precio:</strong> ${dailyMenu.price}</Typography>
-                  {userRole === 'admin' && (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => setIsEditingMenu(true)}
-                      style={{ marginTop: '20px' }}
-                    >
-                      Editar Menú
-                    </Button>
-                  )}
-                </div>
+  <Typography><strong>Sopa 1:</strong> {dailyMenu.soup1}</Typography>
+  <Typography><strong>Sopa 2:</strong> {dailyMenu.soup2}</Typography>
+  <Typography><strong>Plato Principal 1:</strong> {dailyMenu.mainDish1}</Typography>
+  <Typography><strong>Plato Principal 2:</strong> {dailyMenu.mainDish2}</Typography>
+  <Typography><strong>Precio:</strong> ${dailyMenu.price}</Typography>
+  <Typography><strong>PIN de Entrega:</strong> {dailyMenu.pinDelivery}</Typography> {/* Agregado */}
+  {userRole === 'admin' && (
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={() => setIsEditingMenu(true)}
+      style={{ marginTop: '20px' }}
+    >
+      Editar Menú
+    </Button>
+  )}
+</div>
               )}
             </Paper>
           </Grid>

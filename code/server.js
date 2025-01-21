@@ -9,7 +9,27 @@ const PORT = 5000;
 
 // Middlewares
 app.use(bodyParser.json());
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:3000', // Cambia según el origen de tu frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-role', 'Authorization'], // Agrega todos los headers necesarios
+  credentials: true // Permitir cookies y credenciales
+};
+app.use(cors(corsOptions));
+
+// Responder manualmente a solicitudes preflight
+app.options('*', cors(corsOptions));
+
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // Ajusta según el dominio
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, x-role, Authorization');
+    return res.status(200).json({});
+  }
+  next();
+});
+
 
 // Conectar a MongoDB
 mongoose.connect(
@@ -106,30 +126,68 @@ app.get('/api/daily-menu', async (req, res) => {
 
 // Ruta para sobrescribir el Menú del Día (solo admin puede modificar)
 app.put('/api/daily-menu', checkRole(['admin']), async (req, res) => {
-  const { soup1, soup2, mainDish1, mainDish2, price } = req.body;
+  const { soup1, soup2, mainDish1, mainDish2, price, pinDelivery } = req.body;
 
   try {
-      const collection = mongoose.connection.collection('DailyMenu');
-      const newMenu = {
-          soup1: soup1 || null,
-          soup2: soup2 || null,
-          mainDish1: mainDish1 || null,
-          mainDish2: mainDish2 || null,
-          price: price !== null ? parseFloat(price) : null,
-          updatedAt: new Date(),
-      };
+    const collection = mongoose.connection.collection('DailyMenu');
+    const newMenu = {
+      soup1: soup1 || null,
+      soup2: soup2 || null,
+      mainDish1: mainDish1 || null,
+      mainDish2: mainDish2 || null,
+      price: price ? parseFloat(price) : null,
+      pinDelivery: pinDelivery || null, // Nuevo valor del pinDelivery
+      updatedAt: new Date(), // Fecha de actualización
+    };
 
-      const result = await collection.updateOne({}, { $set: newMenu }, { upsert: true });
-      res.status(result.upsertedCount > 0 ? 201 : 200).json({
-          message: result.upsertedCount > 0
-              ? 'Menú del día creado exitosamente.'
-              : 'Menú del día actualizado exitosamente.',
-      });
+    // Actualizar o insertar el DailyMenu
+    const result = await collection.updateOne({}, { $set: newMenu }, { upsert: true });
+
+    // Actualizar todas las solicitudes de comida con el nuevo pinDelivery
+    if (pinDelivery) {
+      const foodServiceRequestsCollection = mongoose.connection.collection('FoodServiceRequests');
+      await foodServiceRequestsCollection.updateMany(
+        {},
+        { $set: { pinDelivery: pinDelivery } } // Actualiza el campo pinDelivery en todas las solicitudes
+      );
+    }
+
+    res.status(result.upsertedCount > 0 ? 201 : 200).json({
+      message: result.upsertedCount > 0
+        ? 'Menú del día creado exitosamente y solicitudes actualizadas.'
+        : 'Menú del día actualizado exitosamente y solicitudes actualizadas.',
+    });
   } catch (error) {
-      console.error('Error al actualizar el menú del día:', error);
-      res.status(500).json({ message: 'Error al actualizar el menú del día.' });
+    console.error('Error al actualizar el menú del día:', error);
+    res.status(500).json({ message: 'Error al actualizar el menú del día.' });
   }
 });
+
+// Ruta para manejar POST de calificaciones
+app.post('/api/review-service-requests', checkRole(['admin']), async (req, res) => {
+  const { roomNumber, ratingValue, customerComment } = req.body;
+
+  if (!roomNumber || !ratingValue || !customerComment) {
+    return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+  }
+
+  try {
+    const collection = mongoose.connection.collection('ReviewService');
+    const newReview = {
+      roomNumber,
+      ratingValue,
+      customerComment,
+      timestamp: new Date(),
+    };
+
+    const result = await collection.insertOne(newReview);
+    res.status(201).json({ message: 'Calificación añadida exitosamente.', review: result.ops[0] });
+  } catch (error) {
+    console.error('Error al agregar la calificación:', error);
+    res.status(500).json({ message: 'Error al agregar la calificación.' });
+  }
+});
+
 
 
 // Iniciar el servidor
