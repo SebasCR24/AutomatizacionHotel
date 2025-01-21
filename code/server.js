@@ -11,23 +11,21 @@ const PORT = 5000;
 app.use(bodyParser.json());
 const corsOptions = {
   origin: 'http://localhost:3000', // Cambia según el origen de tu frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'x-role', 'Authorization'], // Agrega todos los headers necesarios
-  credentials: true // Permitir cookies y credenciales
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'x-role', 'Authorization'], // Incluye todas las cabeceras personalizadas
+  credentials: true // Permite credenciales
 };
+
+// Middleware CORS
 app.use(cors(corsOptions));
 
-// Responder manualmente a solicitudes preflight
-app.options('*', cors(corsOptions));
-
-app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // Ajusta según el dominio
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, x-role, Authorization');
-    return res.status(200).json({});
-  }
-  next();
+// Responder manualmente solicitudes preflight (OPTIONS)
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, x-role, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true'); // Permite credenciales
+  res.status(200).send();
 });
 
 
@@ -102,11 +100,15 @@ app.post('/api/login', async (req, res) => {
 // Middleware para verificar roles
 const checkRole = (roles) => (req, res, next) => {
   const role = req.header('x-role');
-  if (!role || !roles.includes(role)) {
+  if (!role) {
+    return res.status(400).json({ message: 'El encabezado x-role es obligatorio' });
+  }
+  if (!roles.includes(role)) {
     return res.status(403).json({ message: 'Acceso denegado' });
   }
   next();
 };
+
 
 // Ruta para obtener el Menú del Día (admin y user pueden acceder)
 app.get('/api/daily-menu', async (req, res) => {

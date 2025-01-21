@@ -38,28 +38,28 @@
     const handlePostRating = async (e) => {
       e.preventDefault();
       try {
-          const response = await fetch(API_REVIEWS_URL, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  ...(userRole && { 'x-role': userRole }) // Incluye x-role solo si es necesario
-              },
-              body: JSON.stringify(newRating),
-          });
-  
-          if (!response.ok) {
-              throw new Error(`Error: ${response.status} - ${response.statusText}`);
-          }
-  
-          const data = await response.json();
-          console.log('Calificación añadida:', data);
-          fetchRatings(); // Recarga las calificaciones
-          setNewRating({ roomNumber: '', ratingValue: 0, customerComment: '' }); // Limpia el formulario
+        const response = await fetch(API_REVIEWS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(userRole && { 'x-role': userRole }) // Incluye x-role solo si está definido
+          },
+          body: JSON.stringify(newRating),
+        });
+    
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+    
+        const data = await response.json();
+        console.log('Calificación añadida:', data);
+        fetchRatings(); // Recarga las calificaciones
+        setNewRating({ roomNumber: '', ratingValue: 0, customerComment: '' }); // Limpia el formulario
       } catch (error) {
-          console.error('Error al agregar la calificación:', error.message);
-          setError('Error al agregar la calificación: ' + error.message);
+        console.error('Error al agregar la calificación:', error.message);
+        setError('Error al agregar la calificación: ' + error.message);
       }
-  };  
+    };    
 
 
     useEffect(() => {
