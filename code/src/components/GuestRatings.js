@@ -38,29 +38,42 @@
     const handlePostRating = async (e) => {
       e.preventDefault();
       try {
+        // Validación de campos
+        if (!newRating.roomNumber || newRating.ratingValue === 0 || !newRating.customerComment) {
+          setError('Todos los campos son obligatorios.');
+          return;
+        }
+    
+        // Enviar la solicitud
         const response = await fetch(API_REVIEWS_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(userRole && { 'x-role': userRole }) // Incluye x-role solo si está definido
+            'x-role': userRole || 'guest',
           },
           body: JSON.stringify(newRating),
         });
     
+        // Verificar la respuesta
         if (!response.ok) {
+          const errorDetails = await response.json();
+          console.error('Error en el POST:', errorDetails);
           throw new Error(`Error: ${response.status} - ${response.statusText}`);
         }
     
         const data = await response.json();
         console.log('Calificación añadida:', data);
-        fetchRatings(); // Recarga las calificaciones
-        setNewRating({ roomNumber: '', ratingValue: 0, customerComment: '' }); // Limpia el formulario
+    
+        // Refrescar las calificaciones y limpiar el formulario
+        fetchRatings();
+        setNewRating({ roomNumber: '', ratingValue: 0, customerComment: '' });
+        setError(null);
       } catch (error) {
         console.error('Error al agregar la calificación:', error.message);
         setError('Error al agregar la calificación: ' + error.message);
       }
-    };    
-
+    };
+    
 
     useEffect(() => {
       fetchRatings();
