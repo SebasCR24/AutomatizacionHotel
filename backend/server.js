@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt'); // Añadido para cifrado de contraseñas
 const app = express();
 const PORT = 5000;
 
+
+
 // Middlewares
 app.use(bodyParser.json());
 const corsOptions = {
