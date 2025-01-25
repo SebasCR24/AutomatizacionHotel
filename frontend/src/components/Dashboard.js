@@ -21,13 +21,13 @@ const Dashboard = () => {
   const [menuMessage, setMenuMessage] = useState('');
   const [isEditingMenu, setIsEditingMenu] = useState(false); // Nuevo estado para el formulario de edición
 
-  const API_BASE_URL = 'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/room-service-requests';
+  const API_BASE_URL = `${process.env.REACT_APP_API_URL}`;
   const userRole = JSON.parse(localStorage.getItem('user'))?.role; // Obtener rol del usuario
 
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_BASE_URL);
+      const response = await fetch(`${API_BASE_URL}/api/room-service-requests`);
       if (!response.ok) {
         throw new Error('Error al obtener las solicitudes');
       }
@@ -43,7 +43,7 @@ const Dashboard = () => {
 const fetchMenu = async () => {
   try {
     const role = JSON.parse(localStorage.getItem('user'))?.role || '';
-    const response = await fetch('http://localhost:5000/api/daily-menu', {
+    const response = await fetch(`${API_BASE_URL}/api/daily-menu`,  {
       headers: { 'x-role': role },
     });
     if (response.ok) {
@@ -128,7 +128,7 @@ const fetchMenu = async () => {
     };
   
     try {
-      const response = await fetch('http://localhost:5000/api/daily-menu', {
+      const response = await fetch(`${API_BASE_URL}/api/daily-menu`,  {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
