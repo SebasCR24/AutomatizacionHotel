@@ -10,7 +10,7 @@ const PORT = 5000;
 // Middlewares
 app.use(bodyParser.json());
 const corsOptions = {
-  origin: 'http://localhost:3000', // Cambia según el origen de tu frontend
+  origin: 'https://main.d1j1pcfm8ux9bh.amplifyapp.com', // URL pública de Amplify
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
   allowedHeaders: ['Content-Type', 'x-role', 'Authorization'], // Incluye todas las cabeceras personalizadas
   credentials: true // Permite credenciales
