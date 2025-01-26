@@ -25,8 +25,8 @@ const GuestRatings = () => {
       if (!response.ok) {
         throw new Error('Error al obtener las calificaciones');
       }
-      const data = await response.json(); 
-      setRatings(transformedData);
+      const data = await response.json();
+      setRatings(data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,21 +49,23 @@ const GuestRatings = () => {
           'Content-Type': 'application/json',
           'x-role': userRole || 'guest',
         },
-        body: JSON.stringify({
-          ...newRating,
-          ratingValue: newRating.ratingValue * 2, // Conversión a escala de 10 antes de enviar
-        }),
+        body: JSON.stringify(newRating),
       });
 
       if (!response.ok) {
-        throw new Error('Error al agregar la calificación');
+        const errorDetails = await response.json();
+        console.error('Error en el POST:', errorDetails);
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
       }
 
-      // Refrescar las calificaciones y limpiar el formulario
+      const data = await response.json();
+      console.log('Calificación añadida:', data);
+
       fetchRatings();
       setNewRating({ roomNumber: '', ratingValue: 0, customerComment: '' });
       setError(null);
     } catch (error) {
+      console.error('Error al agregar la calificación:', error.message);
       setError('Error al agregar la calificación: ' + error.message);
     }
   };
@@ -76,7 +78,11 @@ const GuestRatings = () => {
     <div style={{ backgroundColor: '#f0f2f5', minHeight: '100vh', padding: '40px 0', display: 'flex', justifyContent: 'center' }}>
       <Sidebar />
       <Container maxWidth="lg">
-        <Typography variant="h4" gutterBottom style={{ textAlign: 'center', marginBottom: '40px', fontWeight: 600, fontSize: '28px' }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          style={{ textAlign: 'center', marginBottom: '40px', fontWeight: 600, fontSize: '28px' }}
+        >
           Calificaciones de los Huéspedes
         </Typography>
 
@@ -99,15 +105,11 @@ const GuestRatings = () => {
                           <Typography variant="h6" style={{ fontWeight: 600 }}>
                             Habitación: {rating.roomNumber}
                           </Typography>
-                          <Typography>
-                            <strong>Fecha:</strong> {moment(rating.timestamp).format('LLL')}
-                          </Typography>
-                          <Typography>
-                            <strong>Comentario:</strong> {rating.customerComment}
-                          </Typography>
+                          <Typography><strong>Fecha:</strong> {moment(rating.timestamp).format('LLL')}</Typography>
+                          <Typography><strong>Comentario:</strong> {rating.customerComment}</Typography>
                           <Typography>
                             <strong>Calificación:</strong>
-                            <Rating value={rating.ratingValue} max={10} readOnly precision={1} />
+                            <Rating value={rating.ratingValue} max={10} readOnly precision={0.5} />
                           </Typography>
                         </CardContent>
                       </Card>
@@ -117,6 +119,55 @@ const GuestRatings = () => {
               )}
             </Paper>
           </Grid>
+
+          {userRole === 'admin' && (
+            <Grid item xs={12}>
+              <Paper elevation={5} style={{ padding: '30px', borderRadius: '15px', backgroundColor: '#fff' }}>
+                <Typography variant="h6" gutterBottom style={{ fontWeight: 500 }}>
+                  Agregar Calificación
+                </Typography>
+                <form onSubmit={handlePostRating}>
+                  <TextField
+                    label="Número de Habitación"
+                    name="roomNumber"
+                    value={newRating.roomNumber}
+                    onChange={(e) => setNewRating({ ...newRating, roomNumber: e.target.value })}
+                    fullWidth
+                    style={{ marginBottom: '20px' }}
+                  />
+                  <TextField
+                    label="Comentario"
+                    name="customerComment"
+                    value={newRating.customerComment}
+                    onChange={(e) => setNewRating({ ...newRating, customerComment: e.target.value })}
+                    fullWidth
+                    style={{ marginBottom: '20px' }}
+                  />
+                  <Typography style={{ marginBottom: '10px' }}>Calificación:</Typography>
+                  <Rating
+                    name="ratingValue"
+                    value={newRating.ratingValue}
+                    onChange={(e, newValue) => setNewRating({ ...newRating, ratingValue: newValue })}
+                    max={10}
+                    precision={1}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => setIsPosting(false)}
+                      style={{ marginRight: '10px' }}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button variant="contained" color="primary" type="submit">
+                      Guardar Calificación
+                    </Button>
+                  </div>
+                </form>
+              </Paper>
+            </Grid>
+          )}
         </Grid>
       </Container>
     </div>
