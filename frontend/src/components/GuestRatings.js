@@ -28,12 +28,11 @@ const GuestRatings = () => {
       const data = await response.json();
 
       // Convertir las calificaciones a escala de 5 estrellas
-      const updatedRatings = data.map((rating) => ({
+      const transformedData = data.map((rating) => ({
         ...rating,
-        ratingValue: rating.ratingValue / 2, // Conversión a escala de 5 estrellas
+        ratingValue: rating.ratingValue / 2, // Dividir por 2 para la escala de 5 estrellas
       }));
-
-      setRatings(updatedRatings);
+      setRatings(transformedData);
     } catch (err) {
       setError(err.message);
     } finally {
