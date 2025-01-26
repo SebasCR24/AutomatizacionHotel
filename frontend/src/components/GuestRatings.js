@@ -25,13 +25,7 @@ const GuestRatings = () => {
       if (!response.ok) {
         throw new Error('Error al obtener las calificaciones');
       }
-      const data = await response.json();
-
-      // Convertir las calificaciones a escala de 5 estrellas
-      const transformedData = data.map((rating) => ({
-        ...rating,
-        ratingValue: rating.ratingValue / 2, // Dividir por 2 para la escala de 5 estrellas
-      }));
+      const data = await response.json(); 
       setRatings(transformedData);
     } catch (err) {
       setError(err.message);
@@ -105,11 +99,15 @@ const GuestRatings = () => {
                           <Typography variant="h6" style={{ fontWeight: 600 }}>
                             Habitación: {rating.roomNumber}
                           </Typography>
-                          <Typography><strong>Fecha:</strong> {moment(rating.timestamp).format('LLL')}</Typography>
-                          <Typography><strong>Comentario:</strong> {rating.customerComment}</Typography>
+                          <Typography>
+                            <strong>Fecha:</strong> {moment(rating.timestamp).format('LLL')}
+                          </Typography>
+                          <Typography>
+                            <strong>Comentario:</strong> {rating.customerComment}
+                          </Typography>
                           <Typography>
                             <strong>Calificación:</strong>
-                            <Rating value={rating.ratingValue} readOnly precision={0.5} />
+                            <Rating value={rating.ratingValue} max={10} readOnly precision={1} />
                           </Typography>
                         </CardContent>
                       </Card>
@@ -119,54 +117,6 @@ const GuestRatings = () => {
               )}
             </Paper>
           </Grid>
-
-          {userRole === 'admin' && (
-            <Grid item xs={12}>
-              <Paper elevation={5} style={{ padding: '30px', borderRadius: '15px', backgroundColor: '#fff' }}>
-                <Typography variant="h6" gutterBottom style={{ fontWeight: 500 }}>
-                  Agregar Calificación
-                </Typography>
-                <form onSubmit={handlePostRating}>
-                  <TextField
-                    label="Número de Habitación"
-                    name="roomNumber"
-                    value={newRating.roomNumber}
-                    onChange={(e) => setNewRating({ ...newRating, roomNumber: e.target.value })}
-                    fullWidth
-                    style={{ marginBottom: '20px' }}
-                  />
-                  <TextField
-                    label="Comentario"
-                    name="customerComment"
-                    value={newRating.customerComment}
-                    onChange={(e) => setNewRating({ ...newRating, customerComment: e.target.value })}
-                    fullWidth
-                    style={{ marginBottom: '20px' }}
-                  />
-                  <Typography style={{ marginBottom: '10px' }}>Calificación:</Typography>
-                  <Rating
-                    name="ratingValue"
-                    value={newRating.ratingValue}
-                    onChange={(e, newValue) => setNewRating({ ...newRating, ratingValue: newValue })}
-                    precision={0.5}
-                  />
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      onClick={() => setIsPosting(false)}
-                      style={{ marginRight: '10px' }}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button variant="contained" color="primary" type="submit">
-                      Guardar Calificación
-                    </Button>
-                  </div>
-                </form>
-              </Paper>
-            </Grid>
-          )}
         </Grid>
       </Container>
     </div>
@@ -174,4 +124,3 @@ const GuestRatings = () => {
 };
 
 export default GuestRatings;
-x
