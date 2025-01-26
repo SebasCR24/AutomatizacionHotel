@@ -1,17 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Container,
-  Grid,
-  Paper,
-  Typography,
-  Button,
-  List,
-  ListItem,
-  Card,
-  CardContent,
-  TextField,
-  Rating,
-} from '@mui/material';
+import { Container, Grid, Paper, Typography, Button, List, ListItem, Card, CardContent, TextField, Rating } from '@mui/material';
 import moment from 'moment';
 import Sidebar from './Sidebar';
 
@@ -38,7 +26,14 @@ const GuestRatings = () => {
         throw new Error('Error al obtener las calificaciones');
       }
       const data = await response.json();
-      setRatings(data);
+
+      // Convertir las calificaciones a escala de 5 estrellas
+      const updatedRatings = data.map((rating) => ({
+        ...rating,
+        ratingValue: rating.ratingValue / 2, // Conversión a escala de 5 estrellas
+      }));
+
+      setRatings(updatedRatings);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -50,38 +45,32 @@ const GuestRatings = () => {
   const handlePostRating = async (e) => {
     e.preventDefault();
     try {
-      // Validación de campos
       if (!newRating.roomNumber || newRating.ratingValue === 0 || !newRating.customerComment) {
         setError('Todos los campos son obligatorios.');
         return;
       }
 
-      // Enviar la solicitud
       const response = await fetch(API_REVIEWS_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-role': userRole || 'guest',
         },
-        body: JSON.stringify(newRating),
+        body: JSON.stringify({
+          ...newRating,
+          ratingValue: newRating.ratingValue * 2, // Conversión a escala de 10 antes de enviar
+        }),
       });
 
-      // Verificar la respuesta
       if (!response.ok) {
-        const errorDetails = await response.json();
-        console.error('Error en el POST:', errorDetails);
-        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        throw new Error('Error al agregar la calificación');
       }
-
-      const data = await response.json();
-      console.log('Calificación añadida:', data);
 
       // Refrescar las calificaciones y limpiar el formulario
       fetchRatings();
       setNewRating({ roomNumber: '', ratingValue: 0, customerComment: '' });
       setError(null);
     } catch (error) {
-      console.error('Error al agregar la calificación:', error.message);
       setError('Error al agregar la calificación: ' + error.message);
     }
   };
@@ -94,11 +83,7 @@ const GuestRatings = () => {
     <div style={{ backgroundColor: '#f0f2f5', minHeight: '100vh', padding: '40px 0', display: 'flex', justifyContent: 'center' }}>
       <Sidebar />
       <Container maxWidth="lg">
-        <Typography
-          variant="h4"
-          gutterBottom
-          style={{ textAlign: 'center', marginBottom: '40px', fontWeight: 600, fontSize: '28px' }}
-        >
+        <Typography variant="h4" gutterBottom style={{ textAlign: 'center', marginBottom: '40px', fontWeight: 600, fontSize: '28px' }}>
           Calificaciones de los Huéspedes
         </Typography>
 
@@ -125,8 +110,7 @@ const GuestRatings = () => {
                           <Typography><strong>Comentario:</strong> {rating.customerComment}</Typography>
                           <Typography>
                             <strong>Calificación:</strong>
-                            {/* Aquí dividimos la calificación entre 2 antes de mostrarla */}
-                            <Rating value={rating.ratingValue / 2} readOnly precision={0.5} />
+                            <Rating value={rating.ratingValue} readOnly precision={0.5} />
                           </Typography>
                         </CardContent>
                       </Card>
@@ -163,8 +147,8 @@ const GuestRatings = () => {
                   <Typography style={{ marginBottom: '10px' }}>Calificación:</Typography>
                   <Rating
                     name="ratingValue"
-                    value={newRating.ratingValue / 2} 
-                    onChange={(e, newValue) => setNewRating({ ...newRating, ratingValue: newValue * 2 })}
+                    value={newRating.ratingValue}
+                    onChange={(e, newValue) => setNewRating({ ...newRating, ratingValue: newValue })}
                     precision={0.5}
                   />
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
