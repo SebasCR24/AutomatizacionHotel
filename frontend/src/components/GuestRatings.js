@@ -151,8 +151,8 @@
                     <Typography style={{ marginBottom: '10px' }}>Calificación:</Typography>
                     <Rating
                       name="ratingValue"
-                      value={newRating.ratingValue / 2}
-                      onChange={(e, newValue) => setNewRating({ ...newRating, ratingValue: newValue})}
+                      value={newRating.ratingValue / 2} 
+                      onChange={(e, newValue) => setNewRating({ ...newRating, ratingValue: newValue * 2})}
                       precision={0.5}
                     />
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
