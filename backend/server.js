@@ -12,7 +12,10 @@ const PORT = 5000;
 // Middlewares
 app.use(bodyParser.json());
 const corsOptions = {
-  origin: 'https://main.d1j1pcfm8ux9bh.amplifyapp.com', // Origen correcto
+  origin: [
+    'https://main.d1j1pcfm8ux9bh.amplifyapp.com',
+    'https://a90f-2800-bf0-2c0-1109-...ngrok-free.app' // URL de ngrok
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
   allowedHeaders: ['Content-Type', 'x-role', 'Authorization'], // Encabezados personalizados
   credentials: true // Permite credenciales
@@ -23,10 +26,13 @@ app.use(cors(corsOptions));
 
 // Responder manualmente solicitudes preflight (OPTIONS)
 app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', 'https://main.d1j1pcfm8ux9bh.amplifyapp.com'); // Origen consistente
+  const origin = req.headers.origin;
+  if (['https://main.d1j1pcfm8ux9bh.amplifyapp.com', 'https://a90f-2800-bf0-2c0-1109-...ngrok-free.app'].includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, x-role, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true'); // Permite credenciales
+  res.header('Access-Control-Allow-Credentials', 'true');
   res.status(200).send();
 });
 
