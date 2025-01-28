@@ -12,9 +12,9 @@ const PORT = 5000;
 // Middlewares
 app.use(bodyParser.json());
 const corsOptions = {
-  origin: 'https://main.d1j1pcfm8ux9bh.amplifyapp.com', // URL pública de Amplify
+  origin: 'https://main.d1j1pcfm8ux9bh.amplifyapp.com', // Origen correcto
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'x-role', 'Authorization'], // Incluye todas las cabeceras personalizadas
+  allowedHeaders: ['Content-Type', 'x-role', 'Authorization'], // Encabezados personalizados
   credentials: true // Permite credenciales
 };
 
@@ -23,7 +23,7 @@ app.use(cors(corsOptions));
 
 // Responder manualmente solicitudes preflight (OPTIONS)
 app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.header('Access-Control-Allow-Origin', 'https://main.d1j1pcfm8ux9bh.amplifyapp.com'); // Origen consistente
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, x-role, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true'); // Permite credenciales
