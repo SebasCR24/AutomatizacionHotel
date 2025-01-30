@@ -11,7 +11,7 @@ const FoodRequests = () => {
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  const API_FOOD_REQUESTS_URL = 'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/food-service-requests';
+  const API_FOOD_REQUESTS_URL = 'https://nj736xewbg.execute-api.us-east-1.amazonaws.com/PROD/food-service-requests';
   const userRole = JSON.parse(localStorage.getItem('user'))?.role; // Obtener el rol del usuario
 
   const fetchFoodRequests = async () => {

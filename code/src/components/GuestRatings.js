@@ -14,7 +14,7 @@
     });
     const [isPosting, setIsPosting] = useState(false);
 
-    const API_REVIEWS_URL = 'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/review-service-requests';
+    const API_REVIEWS_URL = 'https://nj736xewbg.execute-api.us-east-1.amazonaws.com/PROD/review-service-requests';
     const userRole = JSON.parse(localStorage.getItem('user'))?.role || 'guest';
 
     // Método para obtener las calificaciones

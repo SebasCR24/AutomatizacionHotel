@@ -21,7 +21,7 @@ const Dashboard = () => {
   const [menuMessage, setMenuMessage] = useState('');
   const [isEditingMenu, setIsEditingMenu] = useState(false); // Nuevo estado para el formulario de edición
 
-  const API_BASE_URL = 'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/room-service-requests';
+  const API_BASE_URL = 'https://nj736xewbg.execute-api.us-east-1.amazonaws.com/PROD/room-service-requests';
   const userRole = JSON.parse(localStorage.getItem('user'))?.role; // Obtener rol del usuario
 
   const fetchRequests = async () => {
