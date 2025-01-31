@@ -11,14 +11,13 @@ const FoodRequests = () => {
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  const API_FOOD_REQUESTS_URL =
-    'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/food-service-requests';
+  const API_FOOD_REQUESTS_URL = process.env.REACT_APP_API_URL;
   const userRole = JSON.parse(localStorage.getItem('user'))?.role;
 
   const fetchFoodRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_FOOD_REQUESTS_URL);
+      const response = await fetch(`${API_FOOD_REQUESTS_URL}/food-service-requests`);
       if (!response.ok) {
         throw new Error('Error al obtener las solicitudes de comida');
       }
@@ -40,7 +39,7 @@ const FoodRequests = () => {
         Object.entries(updates).map(([key, value]) => [key, value === '' ? null : value])
       );
 
-      const response = await fetch(`${API_FOOD_REQUESTS_URL}`, {
+      const response = await fetch(`${API_FOOD_REQUESTS_URL}/food-service-requests`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +63,7 @@ const FoodRequests = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`${API_FOOD_REQUESTS_URL}`, {
+      const response = await fetch(`${API_FOOD_REQUESTS_URL}/food-service-requests`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

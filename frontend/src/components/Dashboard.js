@@ -21,13 +21,13 @@ const Dashboard = () => {
   const [menuMessage, setMenuMessage] = useState('');
   const [isEditingMenu, setIsEditingMenu] = useState(false); // Nuevo estado para el formulario de edición
 
-  const API_BASE_URL = `${process.env.REACT_APP_API_URL}`;
+  const API_BASE_URL = process.env.REACT_APP_API_URL;
   const userRole = JSON.parse(localStorage.getItem('user'))?.role; // Obtener rol del usuario
 
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/room-service-requests`);
+      const response = await fetch(`${API_BASE_URL}/room-service-requests`);
       if (!response.ok) {
         throw new Error('Error al obtener las solicitudes');
       }
@@ -43,7 +43,7 @@ const Dashboard = () => {
 const fetchMenu = async () => {
   try {
     const role = JSON.parse(localStorage.getItem('user'))?.role || '';
-    const response = await fetch(`${API_BASE_URL}/api/daily-menu`,  {
+    const response = await fetch(`${API_BASE_URL}/daily-menu`,  {
       headers: { 'x-role': role },
     });
     if (response.ok) {
@@ -67,7 +67,7 @@ const fetchMenu = async () => {
   const handleUpdate = async () => {
     try {
       const { _id, ...updates } = selectedRequest;
-      const response = await fetch(`${API_BASE_URL}`, {
+      const response = await fetch(`${API_BASE_URL}/room-service-requests`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ const fetchMenu = async () => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}`, {
+      const response = await fetch(`${API_BASE_URL}/room-service-requests`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +128,7 @@ const fetchMenu = async () => {
     };
   
     try {
-      const response = await fetch(`${API_BASE_URL}/api/daily-menu`,  {
+      const response = await fetch(`${API_BASE_URL}/daily-menu`,  {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

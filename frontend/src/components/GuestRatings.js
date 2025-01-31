@@ -8,7 +8,7 @@ const GuestRatings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_REVIEWS_URL = 'https://6ddhofrag9.execute-api.us-east-1.amazonaws.com/PROD/review-service-requests';
+  const API_REVIEWS_URL = process.env.REACT_APP_API_URL;
   const userRole = JSON.parse(localStorage.getItem('user'))?.role || 'guest';
 
   // Método para obtener las calificaciones
