@@ -68,6 +68,10 @@ const GuestRatings = () => {
 
             setNewRating({ roomNumber: '', ratingValue: '', customerComment: '' });
             setMessage("Calificación agregada correctamente");
+
+            // Desvanecer el mensaje después de 3 segundos
+            setTimeout(() => setMessage(''), 3000);
+
             fetchRatings(); // Refrescar la lista
         } catch (err) {
             setMessage("Error al agregar la calificación.");
@@ -159,7 +163,13 @@ const GuestRatings = () => {
                                         required
                                         style={{ marginBottom: '15px' }}
                                     />
-                                    {message && <Typography color="primary" style={{ marginBottom: '10px' }}>{message}</Typography>}
+
+                                    {message && (
+                                        <Typography color="primary" style={{ marginBottom: '10px', transition: 'opacity 0.5s' }}>
+                                            {message}
+                                        </Typography>
+                                    )}
+
                                     <Button variant="contained" color="primary" fullWidth type="submit">
                                         Enviar Calificación
                                     </Button>
