@@ -113,7 +113,7 @@
 
 
   // Ruta para obtener el Menú del Día (admin y user pueden acceder)
-  app.get('/api/daily-menu', async (req, res) => {
+  app.get('/daily-menu', async (req, res) => {
     try {
       const collection = mongoose.connection.collection('DailyMenu');
       const menu = await collection.findOne({}, { sort: { updatedAt: -1 } });
@@ -129,7 +129,7 @@
   });
 
   // Ruta para sobrescribir el Menú del Día (solo admin puede modificar)
-  app.put('/api/daily-menu', checkRole(['admin']), async (req, res) => {
+  app.put('/daily-menu', checkRole(['admin']), async (req, res) => {
     const { soup1, soup2, mainDish1, mainDish2, price, pinDelivery } = req.body;
 
     try {
@@ -159,7 +159,7 @@
   });
 
   // Ruta para manejar POST de calificaciones
-  app.post('/api/review-service-requests', checkRole(['admin']), async (req, res) => {
+  app.post('/review-service-requests', checkRole(['admin']), async (req, res) => {
     const { roomNumber, ratingValue, customerComment } = req.body;
 
     if (!roomNumber || !ratingValue || !customerComment) {
