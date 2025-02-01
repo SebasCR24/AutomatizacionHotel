@@ -8,32 +8,42 @@ const GuestRatings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_REVIEWS_URL = process.env.REACT_APP_API_URL;
+  const API_REVIEWS_URL = `${process.env.REACT_APP_API_URL}/review-service-requests`;
   const userRole = JSON.parse(localStorage.getItem('user'))?.role || 'guest';
 
   // Método para obtener las calificaciones
   const fetchRatings = async () => {
     try {
-      setLoading(true);
-      const response = await fetch(API_REVIEWS_URL);
-      if (!response.ok) {
-        throw new Error('Error al obtener las calificaciones');
-      }
-      const data = await response.json();
-      
-      // Convertir ratingValue a un valor proporcional para estrellas (sobre 5)
-      const transformedData = data.map((rating) => ({
-        ...rating,
-        stars: (rating.ratingValue / 10) * 5, // Convertir sobre 5 estrellas
-      }));
+        setLoading(true);
+        const role = JSON.parse(localStorage.getItem('user'))?.role || 'guest';
+        
+        const response = await fetch(API_REVIEWS_URL, {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "x-role": role, // Si la API usa roles
+                "Authorization": `Bearer ${localStorage.getItem('token') || ''}` // Si la API usa tokens
+            }
+        });
 
-      setRatings(transformedData);
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: No tienes acceso a las calificaciones`);
+        }
+
+        const data = await response.json();
+        const transformedData = data.map((rating) => ({
+            ...rating,
+            stars: (rating.ratingValue / 10) * 5, // Convertir a escala de 5 estrellas
+        }));
+
+        setRatings(transformedData);
     } catch (err) {
-      setError(err.message);
+        setError(err.message);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
 
   useEffect(() => {
     fetchRatings();
